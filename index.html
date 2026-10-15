@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1a1530">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nightfall">
 <title>Nightfall · Mafia</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,25 +31,34 @@
     --bg: #1a1530; --bg2: #0f0c1f; --surface: #241d40; --surface2: #2e2652;
     --line: rgba(233,228,255,.12); --text: #ece8ff; --muted: #a59fc6;
     --accent: #f2c14e; --accent-ink: #1a1530; --danger: #e05a6f; --good: #6fd3a8;
+    --felt: #2b2350; --felt2: #1d1738;
   }
   .theme-day {
     --bg: #dfe9f2; --bg2: #c9dbea; --surface: #ffffff; --surface2: #eef4f9;
     --line: rgba(29,42,58,.12); --text: #1d2a3a; --muted: #5b6b7e;
     --accent: #1f6f78; --accent-ink: #ffffff; --danger: #c43c52; --good: #1f8a5b;
+    --felt: #f6fafd; --felt2: #e3edf5;
   }
-  .theme-vote { --accent: #b8325a; --accent-ink: #fff; }
+  .theme-vote { --accent: #b8325a; --accent-ink: #fff; --felt: #fdf3f6; --felt2: #f3e1e7; }
   .theme-blood {
     --bg: #1c0f16; --bg2: #10080c; --surface: #2a1520; --surface2: #361b29;
     --line: rgba(255,220,230,.12); --text: #fbe9ef; --muted: #c49aa8;
     --accent: #e05a6f; --accent-ink: #1c0f16; --danger: #ff7b8f; --good: #6fd3a8;
+    --felt: #3a1a28; --felt2: #24101a;
   }
+  :root { --nav-h: 64px; --kb: 0px; }
   html, body { height: 100%; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0; background: var(--bg2); color: var(--text);
     font-family: Figtree, "Noto Sans Armenian", system-ui, sans-serif; -webkit-font-smoothing: antialiased;
-    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-top: env(safe-area-inset-top, 0px);
+    overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent;
   }
-  body, .panel, .panel-soft, .seat, .hdr, .field, .chip, .btn, .tile { transition: background-color .9s ease, color .9s ease, border-color .9s ease, transform .1s, filter .15s, box-shadow .2s; }
+  body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: var(--bg); z-index: 45; }
+  button, a, input, select, label { touch-action: manipulation; }
+  button { -webkit-user-select: none; user-select: none; }
+  body, .panel, .panel-soft, .field, .chip, .btn, .tile, .topbar, #nav, .dock-inner, .felt, .iconbtn { transition: background-color .9s ease, color .9s ease, border-color .9s ease, transform .12s, filter .15s, box-shadow .25s; }
 
   /* ================= Sky ================= */
   #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
@@ -62,71 +77,170 @@
   .theme-day #orb .sun { transform: none; opacity: 1; }
   .theme-blood #orb .moon { background: radial-gradient(circle at 35% 35%, #ffc2c2, #c0392b 70%); box-shadow: 0 0 70px 16px rgba(224,90,111,.35); }
   @keyframes glow { 50% { box-shadow: 0 0 110px 44px rgba(255,200,90,.55); } }
-  @media (max-width: 640px) { #orb { width: 54px; height: 54px; top: 84px; right: 5%; opacity: .7; } }
+  @media (max-width: 1023px) { #orb { width: 46px; height: 46px; top: calc(70px + env(safe-area-inset-top, 0px)); right: 4%; opacity: .55; } }
 
   /* ================= Components ================= */
-  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; }
   .panel-soft { background: var(--surface2); border-radius: 14px; }
   .muted { color: var(--muted); }
   .accent { color: var(--accent); }
-  .hdr { background: color-mix(in srgb, var(--bg) 82%, transparent); border-bottom: 1px solid var(--line); }
-  .btn { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; border-radius:999px; padding:.7rem 1.25rem; font-weight:600; position: relative; white-space: nowrap; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; border-radius:999px; padding:.75rem 1.25rem; font-weight:600; position: relative; white-space: nowrap; min-height: 44px; }
   .btn:active { transform: scale(.96); }
   .btn:disabled { opacity:.45; cursor:not-allowed; }
-  .btn-primary { background: var(--accent); color: var(--accent-ink); }
-  .btn-primary:not(:disabled):hover { filter: brightness(1.08); }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 30%, transparent); }
   .btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--text); }
-  .btn-ghost:hover { background: var(--surface2); }
   .btn-danger { background: var(--danger); color: #fff; }
-  .btn-sm { padding:.4rem .85rem; font-size:.85rem; }
-  .btn-icon { width: 38px; height: 38px; padding: 0; font-size: 1.05rem; }
-  .btn-on { background: color-mix(in srgb, var(--accent) 18%, transparent); border-color: var(--accent); }
-  .field { width:100%; background: var(--surface2); border:1px solid var(--line); color: var(--text); border-radius: 14px; padding:.8rem 1rem; outline: none; }
+  .btn-sm { padding:.45rem .9rem; font-size:.85rem; min-height: 38px; }
+  .iconbtn { width: 42px; height: 42px; flex-shrink: 0; border-radius: 999px; display: grid; place-items: center; font-size: 1.15rem; background: var(--surface2); border: 1px solid var(--line); color: var(--text); }
+  .iconbtn:active { transform: scale(.9); }
+  .field { width:100%; background: var(--surface2); border:1px solid var(--line); color: var(--text); border-radius: 14px; padding:.8rem 1rem; outline: none; font-size: 16px; }
   .field::placeholder { color: var(--muted); }
   .field:focus { border-color: var(--accent); }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .bar { background: var(--accent); transition: width .5s ease; }
   .chip { display:inline-flex; align-items:center; gap:.3rem; font-size:.72rem; font-weight:600; padding:.15rem .55rem; border-radius:999px; background: var(--surface2); color: var(--muted); white-space: nowrap; }
+  .iconbtn.hidden, .nbadge.hidden, .chip.hidden, .btn.hidden, .callbtn.hidden { display: none; }
+  .chip:empty { display: none; }
   .chip-accent { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
   .chip-danger { background: color-mix(in srgb, var(--danger) 18%, transparent); color: var(--danger); }
   .chip-good { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good); }
   .avatar { width: 42px; height: 42px; border-radius: 999px; display:grid; place-items:center; font-weight:700; color:#fff; flex-shrink:0; }
   .avatar-xs { width: 20px; height: 20px; font-size: .6rem; border: 2px solid var(--surface); }
   .avatar-sm { width: 30px; height: 30px; font-size: .8rem; }
-  .avatar-lg { width: 64px; height: 64px; font-size: 1.6rem; }
-  .avatar-xl { width: 88px; height: 88px; font-size: 2.2rem; }
-
-  /* Seats */
-  .seat { position:relative; text-align:left; background: var(--surface); border:1px solid var(--line); border-radius: 18px; padding: .8rem; }
-  .seat.pickable { cursor:pointer; }
-  .seat.pickable:hover { border-color: color-mix(in srgb, var(--accent) 60%, transparent); transform: translateY(-2px); }
-  .seat.picked { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
-  .seat.picked::after { content:''; position:absolute; inset:-4px; border-radius: 22px; border: 2px solid var(--accent); animation: ring 1.6s ease-out infinite; pointer-events:none; }
-  .seat.speaking { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset, 0 8px 30px color-mix(in srgb, var(--accent) 25%, transparent); }
-  .seat.dead { opacity:.55; filter: grayscale(.8); }
-  .seat.dead .seat-name { text-decoration: line-through; text-decoration-thickness: 1px; }
-  .seat.dimmed { opacity: .5; }
-  .votecount { position:absolute; top:-9px; right:-9px; min-width:28px; height:28px; padding:0 7px; border-radius:999px; background: var(--accent); color: var(--accent-ink); font-weight:700; display:grid; place-items:center; font-size:.85rem; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
-  .eq { display:inline-flex; align-items:flex-end; gap:2px; height: 12px; }
-  .eq span { width:3px; height:100%; background: var(--accent); border-radius:2px; transform-origin: bottom; animation: eq .9s ease-in-out infinite; animation-delay: calc(var(--i) * .15s); }
-  .step { display:flex; align-items:center; gap:.35rem; padding:.3rem .7rem; border-radius:999px; color: var(--muted); font-weight:600; }
+  .avatar-lg { width: 58px; height: 58px; font-size: 1.45rem; }
+  .avatar-xl { width: 84px; height: 84px; font-size: 2.1rem; }
+  .switch { appearance: none; -webkit-appearance: none; width: 48px; height: 28px; border-radius: 999px; background: var(--line); position: relative; transition: background .2s; flex-shrink: 0; cursor: pointer; }
+  .switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.3); transition: transform .25s cubic-bezier(.3,1.4,.6,1); }
+  .switch:checked { background: var(--accent); }
+  .switch:checked::after { transform: translateX(20px); }
+  .switch:disabled { opacity: .5; cursor: default; }
+  .seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--surface2); border: 1px solid var(--line); }
+  .seg button { padding: .35rem .75rem; border-radius: 999px; font-size: .78rem; font-weight: 600; color: var(--muted); min-height: 32px; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 5px rgba(0,0,0,.18); }
+  .step { display:flex; align-items:center; gap:.3rem; padding:.25rem .6rem; border-radius:999px; color: var(--muted); font-weight:600; }
   .step-on { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
-  .step-line { flex:1; height:1px; background: var(--line); min-width: 10px; }
+  .step-line { flex:1; height:1px; background: var(--line); min-width: 8px; }
   .q-done { opacity: .35; }
   .q-now { box-shadow: 0 0 0 3px var(--accent); transform: scale(1.12); }
+  .eq { display:inline-flex; align-items:flex-end; gap:2px; height: 12px; }
+  .eq span { width:3px; height:100%; background: var(--accent); border-radius:2px; transform-origin: bottom; animation: eq .9s ease-in-out infinite; animation-delay: calc(var(--i) * .15s); }
+  .chev { display: inline-block; transition: transform .25s; font-size: 1.3rem; line-height: 1; }
+  .chev.open { transform: rotate(180deg); }
 
-  /* Call tiles */
-  .tile { position: relative; aspect-ratio: 4/3; border-radius: 14px; overflow: hidden; background: var(--surface2); }
+  /* ================= Room shell ================= */
+  .topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; background: color-mix(in srgb, var(--bg) 84%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--line); }
+  .room-main { padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 18px); }
+  #nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 35; height: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); display: grid; grid-template-columns: repeat(4, 1fr); background: color-mix(in srgb, var(--surface) 90%, transparent); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-top: 1px solid var(--line); }
+  .navbtn { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; font-weight: 600; color: var(--muted); }
+  .navbtn .ico { font-size: 22px; line-height: 1; transition: transform .25s cubic-bezier(.3,1.4,.6,1), filter .25s; filter: grayscale(.6); }
+  .navbtn[aria-selected="true"] { color: var(--accent); }
+  .navbtn[aria-selected="true"] .ico { transform: translateY(-2px) scale(1.15); filter: none; }
+  .navbtn[aria-selected="true"]::before { content: ''; position: absolute; top: 0; left: 30%; right: 30%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent); }
+  .nbadge { position: absolute; top: 6px; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; }
+  .nbadge.good { background: var(--surface2); color: var(--text); border: 1px solid var(--line); }
+  .nbadge.good.live { background: var(--good); color: #fff; border-color: transparent; }
+  .dock { position: sticky; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 10px); z-index: 25; margin-top: 14px; }
+  .dock-inner { display: flex; align-items: center; gap: 8px; min-height: 64px; padding: 10px; border-radius: 24px; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--line); box-shadow: 0 14px 40px rgba(0,0,0,.28); }
+  .react-pop { position: absolute; right: 8px; bottom: calc(100% + 8px); display: flex; gap: 2px; padding: 6px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(0,0,0,.25); animation: pop .3s cubic-bezier(.2,.9,.3,1.3); }
+  @media (min-width: 1024px) {
+    #nav { display: none; }
+    .room-main { padding-bottom: 2rem; }
+    .dock { bottom: 16px; }
+  }
+  @media (max-width: 1023px) {
+    [data-tab] { display: none !important; }
+    body.tab-game [data-tab="game"], body.tab-call [data-tab="call"], body.tab-log [data-tab="log"] { display: block !important; }
+    body.tab-chat [data-tab="chat"] { display: flex !important; }
+    #chatSec { position: fixed; left: 0; right: 0; top: calc(59px + env(safe-area-inset-top, 0px)); bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px)); border-radius: 0; border-left: 0; border-right: 0; border-bottom: 0; z-index: 20; }
+    body.kb #chatSec { bottom: var(--kb); }
+    body.kb #nav { display: none; }
+  }
+  @media (min-width: 1024px) { #chatSec { height: 470px; } }
+
+  /* ================= Round table ================= */
+  .table-wrap { padding: 4px 6px 14px; }
+  .table { position: relative; width: min(100%, 460px); aspect-ratio: 1; margin: 0 auto; }
+  .felt { position: absolute; inset: 21%; z-index: 1; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 6%;
+    background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--felt) 90%, transparent), color-mix(in srgb, var(--felt2) 88%, transparent) 75%); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); border: 1px solid var(--line);
+    box-shadow: inset 0 0 0 8px color-mix(in srgb, var(--accent) 10%, transparent), inset 0 10px 40px rgba(0,0,0,.18), 0 20px 50px rgba(0,0,0,.22); }
+  .felt.see { background: color-mix(in srgb, var(--felt) 45%, transparent); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .felt.see .ctimer, .felt.see .felt-ico { text-shadow: 0 0 12px var(--felt), 0 0 4px var(--felt); }
+  .felt-ico { font-size: clamp(2rem, 9vw, 3rem); line-height: 1; animation: iconIn .8s cubic-bezier(.2,.9,.3,1.2) both; }
+  .ctimer { font-weight: 700; font-variant-numeric: tabular-nums; font-size: clamp(1.4rem, 6.5vw, 2rem); line-height: 1.1; margin-top: .25rem; }
+  .ctimer.urgent { color: var(--danger); animation: beat 1s ease-in-out infinite; }
+  .tseat { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; width: calc(var(--seat) + 26px); z-index: 2; }
+  .tseat .av { position: relative; width: var(--seat); height: var(--seat); border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: calc(var(--seat) * .4); border: 3px solid var(--surface); box-shadow: 0 6px 16px rgba(0,0,0,.25); transition: transform .25s cubic-bezier(.3,1.4,.6,1), box-shadow .25s, filter .4s, opacity .3s; }
+  .tseat:active .av { transform: scale(.9); }
+  .tseat .nm { margin-top: 4px; max-width: 100%; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tseat.me .nm { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .tseat.away .av { opacity: .6; }
+  .tseat.dead .av { filter: grayscale(1) brightness(.55); }
+  .tseat.dead .ini { opacity: 0; }
+  .tseat.dead .av::after { content: '💀'; position: absolute; font-size: calc(var(--seat) * .45); filter: none; }
+  .tseat.dead .nm { text-decoration: line-through; opacity: .7; }
+  .tseat.unpick .av { opacity: .38; filter: grayscale(.6); }
+  .tseat.pickable .av { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 60%, transparent), 0 6px 16px rgba(0,0,0,.25); }
+  .tseat.picked .av { transform: scale(1.12); box-shadow: 0 0 0 4px var(--accent), 0 0 26px var(--accent); }
+  .tseat.picked .av::before { content: ''; position: absolute; inset: -8px; border-radius: 50%; border: 2px solid var(--accent); animation: ring 1.6s ease-out infinite; }
+  .tseat.speaking .av { box-shadow: 0 0 0 4px var(--good), 0 0 30px var(--good); animation: breathe 1.6s ease-in-out infinite; }
+  .tseat .vb { position: absolute; top: -7px; right: -7px; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 800; display: grid; place-items: center; border: 2px solid var(--surface); }
+  .tseat .rb { position: absolute; bottom: -5px; left: -5px; width: 24px; height: 24px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); display: grid; place-items: center; font-size: 13px; }
+  .tseat .rb-m { background: color-mix(in srgb, var(--danger) 25%, var(--surface)); }
+  .tseat .nb { position: absolute; top: -6px; left: -6px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 800; border: 2px solid var(--surface); }
+  .tseat .nb.yes { background: var(--danger); color: #fff; }
+  .tseat .nb.no { background: var(--good); color: #fff; }
+  .lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: visible; }
+  .lines path { fill: none; stroke-width: .7; stroke-linecap: round; opacity: .8; }
+  .lines path.vote { stroke: var(--accent); }
+  .lines path.kill { stroke: var(--danger); stroke-dasharray: 2 1.5; }
+  .lines path.draw { stroke-dasharray: 120; stroke-dashoffset: 120; animation: draw .7s ease-out forwards; }
+  .lines path.kill.draw { stroke-dasharray: 120; }
+
+  /* List seats (alternative view) */
+  .seat { position:relative; text-align:left; background: var(--surface); border:1px solid var(--line); border-radius: 18px; padding: .75rem; }
+  .seat.picked { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
+  .seat.speaking { border-color: var(--good); box-shadow: 0 0 0 2px var(--good) inset; }
+  .seat.dead { opacity:.55; filter: grayscale(.8); }
+  .seat.dead .seat-name { text-decoration: line-through; }
+  .seat.unpick { opacity: .45; }
+  .votecount { position:absolute; top:-9px; right:-9px; min-width:28px; height:28px; padding:0 7px; border-radius:999px; background: var(--accent); color: var(--accent-ink); font-weight:700; display:grid; place-items:center; font-size:.85rem; }
+
+  /* Lobby */
+  .lseat { display: flex; flex-direction: column; align-items: center; min-width: 0; padding: 2px; }
+  .lseat:active { transform: scale(.94); }
+  .crown { position: absolute; top: -10px; right: -4px; font-size: 16px; }
+  .off-dot { position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); }
+  .empty-seat { width: 58px; height: 58px; border-radius: 50%; border: 2px dashed var(--line); }
+
+  /* Sheets */
+  #sheetWrap { position: fixed; inset: 0; z-index: 55; }
+  #sheetBg { position: absolute; inset: 0; background: color-mix(in srgb, var(--bg2) 62%, transparent); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); animation: fade .25s ease-out; }
+  #sheet { position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; border-radius: 28px 28px 0 0; padding: 6px 18px calc(22px + env(safe-area-inset-bottom, 0px)); animation: sheetUp .42s cubic-bezier(.2,.9,.25,1.05); box-shadow: 0 -20px 60px rgba(0,0,0,.35); }
+  @media (min-width: 640px) { #sheet { bottom: 24px; border-radius: 28px; padding-bottom: 22px; } }
+  .sheet-grip { padding: 8px 0 14px; cursor: grab; touch-action: none; }
+  .sheet-handle { width: 44px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto; }
+  .row-btn { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 4px; border-bottom: 1px solid var(--line); font-weight: 600; min-height: 56px; }
+  .row-btn:last-child { border-bottom: 0; }
+  .row-btn:active { background: var(--surface2); }
+  .row-btn.danger { color: var(--danger); }
+
+  /* Call */
+  .tile { position: relative; aspect-ratio: 3/4; border-radius: 18px; overflow: hidden; background: var(--surface2); }
   .tile video { width: 100%; height: 100%; object-fit: cover; display: block; }
   .tile.self video { transform: scaleX(-1); }
   .tile:not(.has-video) video { opacity: 0; position: absolute; inset: 0; }
   .tile-av { position: absolute; inset: 0; display: grid; place-items: center; }
   .tile.has-video .tile-av { display: none; }
-  .tile-name { position: absolute; left: 6px; bottom: 6px; right: 6px; font-size: .7rem; font-weight: 600; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tile-sleep { position: absolute; inset: 0; display: none; place-items: center; font-size: 1.6rem; background: color-mix(in srgb, var(--bg2) 85%, transparent); }
+  .tile-name { position: absolute; left: 8px; bottom: 8px; right: 8px; font-size: .75rem; font-weight: 700; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile-sleep { position: absolute; inset: 0; display: none; place-items: center; font-size: 2rem; background: color-mix(in srgb, var(--bg2) 85%, transparent); }
   .tile.blocked .tile-sleep { display: grid; }
   .tile.blocked video { visibility: hidden; }
-  .tile.talking { box-shadow: 0 0 0 3px var(--good); }
+  .tile.talking { box-shadow: 0 0 0 3px var(--good), 0 0 24px color-mix(in srgb, var(--good) 50%, transparent); }
+  .callbtn { width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; background: var(--surface2); border: 1px solid var(--line); }
+  .callbtn:active { transform: scale(.9); }
+  .callbtn.off { background: color-mix(in srgb, var(--danger) 22%, var(--surface2)); }
+  .callbtn.end { background: var(--danger); border-color: transparent; }
+  .callbtn.end span { display: inline-block; transform: rotate(135deg); }
 
   /* Chat */
   .msg-mafia { background: color-mix(in srgb, var(--danger) 14%, transparent); }
@@ -134,15 +248,28 @@
   .quick { scrollbar-width: none; } .quick::-webkit-scrollbar { display:none; }
   .gif-msg { max-width: 220px; max-height: 180px; border-radius: 12px; margin-top: .3rem; display: block; }
   #picker { position: absolute; left: .75rem; right: .75rem; bottom: 100%; margin-bottom: .5rem; z-index: 20; box-shadow: 0 16px 40px rgba(0,0,0,.3); }
-  .emoji-btn { font-size: 1.45rem; line-height: 1; padding: .3rem; border-radius: 10px; }
-  .emoji-btn:hover { background: var(--surface2); transform: scale(1.15); }
+  .emoji-btn { font-size: 1.5rem; line-height: 1; padding: .35rem; border-radius: 12px; min-width: 42px; min-height: 42px; }
+  .emoji-btn:active { transform: scale(1.3); }
   .gif-grid { columns: 3; column-gap: .4rem; }
   .gif-grid button { display: block; width: 100%; margin-bottom: .4rem; border-radius: 10px; overflow: hidden; break-inside: avoid; background: var(--surface2); }
   .gif-grid img { width: 100%; display: block; }
   .floater { position: fixed; z-index: 65; pointer-events: none; display: flex; flex-direction: column; align-items: center; animation: floatUp 3.4s cubic-bezier(.2,.7,.3,1) forwards; }
   .floater .e { font-size: 2.6rem; filter: drop-shadow(0 4px 10px rgba(0,0,0,.3)); }
   .floater .n { font-size: .65rem; font-weight: 700; padding: .05rem .4rem; border-radius: 999px; background: var(--surface); color: var(--text); border: 1px solid var(--line); }
-  @keyframes floatUp { 0% { opacity:0; transform: translateY(0) scale(.5); } 12% { opacity:1; transform: translateY(-30px) scale(1.15); } 100% { opacity:0; transform: translate(var(--dx), -58vh) scale(.9) rotate(var(--rot)); } }
+
+  /* History timeline */
+  .timeline { list-style: none; padding: 0; margin: 0; }
+  @media (min-width: 1024px) { .timeline { max-height: 420px; overflow-y: auto; } }
+  .tl { position: relative; padding: 0 0 14px 24px; line-height: 1.45; }
+  .tl::before { content: ''; position: absolute; left: 6px; top: 16px; bottom: 0; width: 2px; background: var(--line); }
+  .tl:last-child::before { display: none; }
+  .tl-dot { position: absolute; left: 0; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); border: 2px solid var(--muted); }
+  .tl-phase .tl-txt { font-weight: 700; }
+  .tl-phase .tl-dot { background: var(--accent); border-color: var(--accent); }
+  .tl-death .tl-dot { background: var(--danger); border-color: var(--danger); }
+  .tl-save .tl-dot { background: var(--good); border-color: var(--good); }
+  .tl-end .tl-dot { background: var(--accent); border-color: var(--accent); transform: scale(1.3); }
+  .tl-end .tl-txt { color: var(--accent); font-weight: 700; }
 
   /* Role card */
   .card-wrap { perspective: 1200px; }
@@ -158,50 +285,53 @@
   #ring { transition: stroke-dashoffset .5s linear, stroke .3s; }
   #overlay { background: color-mix(in srgb, var(--bg2) 72%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
   #overlay.show { animation: fade .3s ease-out; }
+  #testDock { right: 10px; top: calc(64px + env(safe-area-inset-top, 0px)); display: flex; flex-direction: column-reverse; align-items: flex-end; }
+  #testDock.hidden { display: none; }
+  #testPanel { margin: 0 !important; }
+  #testBtn { display: none !important; }
   #testDock .panel { box-shadow: 0 12px 40px rgba(0,0,0,.35); }
 
   /* ================= Motion ================= */
   @keyframes fade { from { opacity:0 } to { opacity:1 } }
   @keyframes rise { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform:none; } }
   @keyframes pop { 0% { opacity:0; transform: scale(.6); } 70% { transform: scale(1.06); } 100% { opacity:1; transform: scale(1); } }
+  @keyframes seatIn { 0% { opacity:0; transform: translate(-50%,-50%) scale(.3); } 70% { transform: translate(-50%,-50%) scale(1.08); } 100% { opacity:1; transform: translate(-50%,-50%) scale(1); } }
   @keyframes letterIn { from { opacity:0; transform: translateY(.4em) rotate(4deg); filter: blur(4px); } to { opacity:1; transform:none; filter:none; } }
   @keyframes iconIn { 0% { opacity:0; transform: scale(.3) rotate(-25deg); } 70% { transform: scale(1.12) rotate(4deg); } 100% { opacity:1; transform:none; } }
-  @keyframes die { 0% { transform:none; filter:none; opacity:1; } 15% { transform: translateX(-5px) rotate(-1.5deg); } 30% { transform: translateX(5px) rotate(1.5deg); } 45% { transform: translateX(-3px); } 60% { transform: none; filter: grayscale(0); opacity:1; } 100% { filter: grayscale(.8); opacity:.55; } }
+  @keyframes die { 0% { transform:none; } 15% { transform: translateX(-5px) rotate(-3deg); } 30% { transform: translateX(5px) rotate(3deg); } 45% { transform: translateX(-3px); } 60%, 100% { transform: none; } }
   @keyframes dieBig { 0% { filter:none; transform: scale(1); } 20% { transform: scale(1.08); } 35% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 65% { transform: none; filter:none; } 100% { filter: grayscale(1) brightness(.6); transform: scale(.94); } }
   @keyframes shield { 0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 60%, transparent); } 50% { box-shadow: 0 0 0 16px color-mix(in srgb, var(--good) 0%, transparent); } }
-  @keyframes ring { 0% { opacity:.85; transform: scale(1); } 100% { opacity:0; transform: scale(1.06); } }
+  @keyframes ring { 0% { opacity:.85; transform: scale(1); } 100% { opacity:0; transform: scale(1.25); } }
   @keyframes beat { 0%,100% { transform: scale(1); } 15% { transform: scale(1.12); } 30% { transform: scale(1); } }
+  @keyframes breathe { 50% { transform: scale(1.08); } }
   @keyframes shimmer { 0%, 30% { transform: translateX(-100%); } 70%, 100% { transform: translateX(100%); } }
   @keyframes zzz { 0% { opacity:0; transform: translate(0,8px) scale(.7); } 40% { opacity:1; } 100% { opacity:0; transform: translate(18px,-22px) scale(1.25); } }
   @keyframes shake { 0%,100% { transform:none; } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
   @keyframes flipIn { from { opacity:0; transform: rotateX(90deg); } to { opacity:1; transform:none; } }
   @keyframes eq { 0%,100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
   @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes sheetUp { from { transform: translateY(100%); } to { transform: none; } }
+  @keyframes floatUp { 0% { opacity:0; transform: translateY(0) scale(.5); } 12% { opacity:1; transform: translateY(-30px) scale(1.15); } 100% { opacity:0; transform: translate(var(--dx), -58vh) scale(.9) rotate(var(--rot)); } }
   .rise { animation: rise .6s cubic-bezier(.2,.8,.2,1) both; animation-delay: var(--d, 0s); }
   .pop-in { animation: pop .5s cubic-bezier(.2,.9,.3,1.3) both; animation-delay: calc(var(--i, 0) * 60ms); }
+  .tseat.seat-in { animation: seatIn .55s cubic-bezier(.2,.9,.3,1.3) both; animation-delay: calc(var(--i, 0) * 55ms); }
   .ltr { display:inline-block; animation: letterIn .7s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i) * 45ms + .1s); }
   .intro-icon { animation: iconIn .9s cubic-bezier(.2,.9,.3,1.2) both; }
   .intro-body { animation: rise .6s ease-out both; animation-delay: .7s; }
   .intro-extra { animation: rise .6s ease-out both; animation-delay: .45s; }
   .intro-btn { animation: rise .5s ease-out both; animation-delay: 1.1s; }
-  .just-died { animation: die 1.4s ease-out both; }
+  .just-died .av { animation: die 1s ease-out both; }
   .vc-pop { animation: pop .4s cubic-bezier(.2,.9,.3,1.4) both; }
   .victim { animation: dieBig 1.8s ease-out .6s both; }
   .saved { animation: shield 1.6s ease-in-out .6s 3; }
   .role-flip { animation: flipIn .6s ease-out both; animation-delay: 1.9s; }
   .shake { animation: shake .35s ease-in-out; }
   .msg-in { animation: rise .35s ease-out both; }
+  .fade-in { animation: fade .3s ease-out both; }
   .sleep span { display:inline-block; animation: zzz 2.4s ease-in-out infinite; animation-delay: calc(var(--i) * .5s); }
   .spinner { width: 22px; height: 22px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
-
-  @media (max-width: 1023px) {
-    [data-tab] { display: none !important; }
-    body.tab-game [data-tab="game"] { display: block !important; }
-    body.tab-chat [data-tab="chat"] { display: flex !important; }
-    body.tab-log [data-tab="log"] { display: block !important; }
-  }
-  .tabbtn[aria-selected="true"] { color: var(--accent); border-color: var(--accent); }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .lines path.draw { stroke-dashoffset: 0; } }
   .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
   .scroll-thin::-webkit-scrollbar-thumb { background: var(--line); border-radius: 6px; }
   #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 70; }
@@ -212,12 +342,14 @@
 <canvas id="stars"></canvas>
 <div id="orb" aria-hidden="true"><div class="moon"></div><div class="sun"></div></div>
 <div id="app" class="relative z-10 min-h-full"></div>
-<div id="testDock" class="fixed z-40 left-4 hidden" style="bottom: calc(1rem + env(safe-area-inset-bottom, 0px));">
+<div id="testDock" class="fixed z-40 hidden">
   <div id="testPanel" class="panel p-4 mb-3 w-[min(19rem,calc(100vw-2rem))] hidden"></div>
-  <button id="testBtn" class="btn btn-primary !rounded-full w-14 h-14 !p-0 text-2xl shadow-xl" aria-label="Test tools">🧪</button>
+  <button id="testBtn" class="btn btn-primary !rounded-full w-10 h-10 !p-0 !min-h-0 text-lg shadow-xl opacity-90" aria-label="Test tools">🧪</button>
 </div>
 <div id="overlay" class="fixed inset-0 z-50 hidden items-center justify-center p-4"></div>
-<div id="toast" class="fixed left-1/2 -translate-x-1/2 z-[60] hidden" style="bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));"></div>
+<div id="sheetWrap" class="hidden"><div id="sheetBg"></div><div id="sheet" class="panel" role="dialog" aria-modal="true"></div></div>
+<div id="peek" class="fixed left-1/2 -translate-x-1/2 z-[58] hidden pointer-events-none" style="top: calc(72px + env(safe-area-inset-top, 0px));"></div>
+<div id="toast" class="fixed left-1/2 -translate-x-1/2 z-[60] hidden w-max max-w-[92vw]" style="top: calc(72px + env(safe-area-inset-top, 0px));"></div>
 <canvas id="confetti"></canvas>
 
 <script>
@@ -411,6 +543,28 @@ const I18N = {
     'test.rush': '🤖 Բոտերը՝ հիմա', 'test.next': '⏭️ Հաջորդ փուլ', 'test.role': '🎭 Դերը', 'test.now': 'Այժմ խաղում եք որպես {name}', 'test.rushing': 'Բոտերը գործում են', 'test.outS': ', դուրս'
   }
 };
+Object.assign(I18N.en, {
+  'nav.game': 'Game', 'nav.chat': 'Chat', 'nav.call': 'Call', 'nav.log': 'History', 'view.table': 'Table', 'view.list': 'List',
+  'menu.title': 'Menu', 'menu.sound': 'Sound', 'menu.lang': 'Language', 'menu.view': 'Player layout', 'menu.leave': 'Leave room', 'menu.on': 'On', 'menu.off': 'Off',
+  'invite': 'Invite friends', 'peek': 'Hold to peek at your role, tap to open the card', 'host.title': 'Host controls',
+  'sheet.kill': "🔪 Choose as tonight's victim", 'sheet.heal': '🩺 Protect tonight', 'sheet.check': '🔍 Investigate', 'sheet.donCheck': '🎩 Check if Detective',
+  'sheet.vote': '🗳️ Vote to eliminate', 'sheet.cancel': 'Cancel my choice', 'sheet.votedBy': 'Votes from', 'sheet.picks': 'Mafia picks',
+  'dock.tap': '👆 Tap a player', 'dock.choice': '✓ Your choice: {name}', 'dock.asleep': 'You are asleep…', 'dock.next': 'Next: {name}',
+  'lobby.tapRemove': 'Tap a player to see options.', 'copyShort': 'Copy', 'call.empty': 'Talk face to face, even from far away.',
+  'call.hint': 'The game mutes the right people at the right moment.', 'install': '📲 Install the app',
+  'iosTip': 'Tip: in Safari tap Share, then "Add to Home Screen" to play full-screen.'
+});
+Object.assign(I18N.hy, {
+  'nav.game': 'Խաղ', 'nav.chat': 'Զրույց', 'nav.call': 'Զանգ', 'nav.log': 'Պատմություն', 'view.table': 'Սեղան', 'view.list': 'Ցուցակ',
+  'menu.title': 'Մենյու', 'menu.sound': 'Ձայն', 'menu.lang': 'Լեզու', 'menu.view': 'Խաղացողների դասավորություն', 'menu.leave': 'Լքել սենյակը', 'menu.on': 'Միացված', 'menu.off': 'Անջատված',
+  'invite': 'Հրավիրել ընկերներին', 'peek': 'Պահեք՝ դերը տեսնելու համար, սեղմեք՝ քարտը բացելու համար', 'host.title': 'Կազմակերպչի կառավարում',
+  'sheet.kill': '🔪 Ընտրել որպես այս գիշերվա զոհ', 'sheet.heal': '🩺 Պաշտպանել այս գիշեր', 'sheet.check': '🔍 Ստուգել', 'sheet.donCheck': '🎩 Ստուգել՝ Կոմիսա՞ր է',
+  'sheet.vote': '🗳️ Քվեարկել հեռացման համար', 'sheet.cancel': 'Չեղարկել ընտրությունը', 'sheet.votedBy': 'Ձայն են տվել', 'sheet.picks': 'Մաֆիայի ընտրությունը',
+  'dock.tap': '👆 Ընտրեք խաղացողին', 'dock.choice': '✓ Ձեր ընտրությունը՝ {name}', 'dock.asleep': 'Դուք քնած եք…', 'dock.next': 'Հաջորդը՝ {name}',
+  'lobby.tapRemove': 'Սեղմեք խաղացողի վրա՝ տարբերակները տեսնելու համար։', 'copyShort': 'Պատճենել', 'call.empty': 'Խոսեք դեմ առ դեմ, նույնիսկ հեռվից։',
+  'call.hint': 'Խաղը ճիշտ պահին անջատում է ճիշտ մարդկանց ձայնը։', 'install': '📲 Տեղադրել հավելվածը',
+  'iosTip': 'Հուշում․ Safari-ում սեղմեք «Կիսվել», ապա «Ավելացնել Հիմնական էկրանին»՝ ամբողջ էկրանով խաղալու համար։'
+});
 let LANG = localStorage.getItem('nf_lang') || ((navigator.language || '').toLowerCase().startsWith('hy') ? 'hy' : 'en');
 function t(key, vars = {}) {
   const s = I18N[LANG][key] ?? I18N.en[key] ?? key;
@@ -483,7 +637,7 @@ const S = {
   lastPhaseKey: null, lastTurnKey: '', prevMe: null, prevSeat: {}, revealedGame: null, seenLobby: new Set(), seenLog: new Set(),
   engineBusy: false, wasMember: false, donMode: 'kill', tab: 'game', unread: 0, deferred: false,
   viewId: null, revealAll: false, botRush: null, botChatted: new Set(), testOpen: false, lastTick: -1,
-  callPeers: {}, picker: null, gifs: [], lastReact: 0
+  callPeers: {}, picker: null, gifs: [], lastReact: 0, prevLines: new Set(), sheetKind: null, sheetId: null, view: localStorage.getItem('nf_view') || 'table', settingsOpen: false, reactOpen: false, tableW: 360, tableGame: null, installEvt: null
 };
 
 const $ = s => document.querySelector(s);
@@ -665,7 +819,9 @@ function renderHome(prefillCode = '', error = '') {
     <div class="flex flex-wrap justify-center gap-3 mt-6 rise" style="--d:.8s">
       <button class="btn btn-ghost btn-sm" data-home="test">${tE('home.test')}</button>
       <button class="btn btn-ghost btn-sm" data-home="help">${tE('home.help')}</button>
+      ${!IS_STANDALONE && S.installEvt ? `<button class="btn btn-primary btn-sm" data-home="install">${tE('install')}</button>` : ''}
     </div>
+    ${!IS_STANDALONE && IS_IOS ? `<p class="text-center muted text-xs mt-5 px-6 leading-relaxed">${tE('iosTip')}</p>` : ''}
   </div>`;
   const form = $('#homeForm');
   const shakeEl = el => { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); el.focus(); };
@@ -691,6 +847,7 @@ function renderHome(prefillCode = '', error = '') {
     if (a === 'create') doCreate(b, false);
     if (a === 'test') doCreate(b, true);
     if (a === 'help') showHelp();
+    if (a === 'install' && S.installEvt) { S.installEvt.prompt(); S.installEvt = null; }
     if (a === 'forget') { history.replaceState(null, '', location.pathname); renderHome(); }
   });
 }
@@ -752,7 +909,7 @@ function detach() {
   [S.roomRef, S.chatRef, S.connRef, S.reactRef, S.peersRef].forEach(r => r && r.off());
   Object.assign(S, { roomRef: null, chatRef: null, connRef: null, reactRef: null, peersRef: null, room: null, code: null, chat: [], lastPhaseKey: null, lastTurnKey: '', prevMe: null, prevSeat: {}, wasMember: false, viewId: null, revealAll: false, testOpen: false, callPeers: {} });
   S.seenLobby = new Set(); S.seenLog = new Set();
-  hideModal(); renderTestDock();
+  hideModal(); hideSheet(); hidePeek(); keepAwake(false); S.prevLines = new Set(); S.tableGame = null; renderTestDock();
 }
 function enterRoom(code) {
   detach();
@@ -981,20 +1138,19 @@ async function toggleMic() { Call.micOn = !Call.micOn; applyCallRules(); Call.pr
 function toggleCam() { Call.camOn = !Call.camOn; applyCallRules(); renderCallBar(); }
 
 function renderCallBar() {
-  const bar = $('#callControls'); if (!bar) return;
-  const n = Object.keys(S.callPeers || {}).length;
-  const names = Object.values(S.callPeers || {}).map(p => p.name).slice(0, 4).join(', ');
-  const ms = micState();
-  $('#callInfo').textContent = n ? `${t('call.inCall', { n })}${names ? ': ' + names : ''}` : t('call.nobody');
-  bar.innerHTML = Call.joined ? `
-    <button class="btn btn-ghost btn-icon ${Call.micOn ? 'btn-on' : ''}" data-call="mic" title="${tE('call.mic')}" aria-pressed="${Call.micOn}">${Call.micOn ? '🎙️' : '🔇'}</button>
-    ${Call.video ? `<button class="btn btn-ghost btn-icon ${Call.camOn ? 'btn-on' : ''}" data-call="cam" title="${tE('call.cam')}" aria-pressed="${Call.camOn}">${Call.camOn ? '📹' : '🚫'}</button>` : ''}
-    <button class="btn btn-danger btn-sm" data-call="leave">${tE('call.leave')}</button>` : `
-    <button class="btn btn-ghost btn-sm" data-call="voice">${tE('call.voice')}</button>
-    <button class="btn btn-ghost btn-sm" data-call="video">${tE('call.video')}</button>`;
-  const note = $('#callNote');
-  note.textContent = Call.joined ? (ms.note ? t(ms.note) : (Call.micOn ? '🟢 ' + t('call.live') : '')) : '';
-  $('#tiles').classList.toggle('hidden', !Call.joined && !Object.keys(Call.tiles).length);
+  if (!$('#callSec')) return;
+  const peers = S.callPeers || {}, n = Object.keys(peers).length, ms = micState();
+  $('#callInfo').textContent = n ? `${t('call.inCall', { n })}: ${Object.values(peers).map(p => p.name).slice(0, 5).join(', ')}` : t('call.nobody');
+  const live = $('#callLive'); live.className = 'chip ' + (Call.joined ? 'chip-good' : ''); live.textContent = Call.joined ? `● ${n}` : (n ? `👤 ${n}` : '');
+  $('#callNote').textContent = Call.joined ? (ms.note ? t(ms.note) : (Call.micOn ? '🟢 ' + t('call.live') : '')) : '';
+  $('#callEmpty').innerHTML = Call.joined ? '' : `<div class="text-center pt-6 pb-2"><div class="text-5xl mb-2">📞</div><p class="font-semibold">${tE('call.empty')}</p><p class="muted text-sm mt-1">${tE('call.hint')}</p>
+    <div class="grid grid-cols-2 gap-2 mt-5"><button class="btn btn-primary" data-call="voice">${tE('call.voice')}</button><button class="btn btn-ghost" data-call="video">${tE('call.video')}</button></div></div>`;
+  $('#callControls').innerHTML = Call.joined ? `
+    <button class="callbtn ${Call.micOn ? '' : 'off'}" data-call="mic" aria-label="${tE('call.mic')}" aria-pressed="${Call.micOn}">${Call.micOn ? '🎙️' : '🔇'}</button>
+    ${Call.video ? `<button class="callbtn ${Call.camOn ? '' : 'off'}" data-call="cam" aria-label="${tE('call.cam')}" aria-pressed="${Call.camOn}">${Call.camOn ? '📹' : '🚫'}</button>` : ''}
+    <button class="callbtn end" data-call="leave" aria-label="${tE('call.leave')}"><span>📞</span></button>` : '';
+  $('#tiles').classList.toggle('hidden', !Call.joined);
+  const cb = $('#callBadge'); if (cb) { cb.textContent = n || ''; cb.classList.toggle('hidden', !n); cb.classList.toggle('live', Call.joined); }
 }
 
 /* =====================================================================
@@ -1238,85 +1394,77 @@ async function backToLobby() {
    ===================================================================== */
 function renderRoomShell() {
   S.screen = 'room';
+  const tabs = [['game', '🎲', 'nav.game'], ['chat', '💬', 'nav.chat'], ['call', '📞', 'nav.call'], ['log', '📜', 'nav.log']];
   $('#app').innerHTML = `
-  <header class="hdr sticky top-0 z-30 backdrop-blur-md">
-    <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2 sm:gap-3">
-      <div id="phaseIcon" class="text-3xl leading-none" aria-hidden="true">🌙</div>
+  <header class="topbar">
+    <div class="max-w-6xl mx-auto h-[58px] px-3 sm:px-4 flex items-center gap-2">
+      <div id="phaseIcon" class="text-2xl w-8 text-center shrink-0" aria-hidden="true">🌙</div>
       <div class="flex-1 min-w-0">
-        <div id="phaseTitle" class="font-display text-2xl leading-none truncate">…</div>
-        <div id="phaseSub" class="text-xs muted truncate mt-1"></div>
+        <div id="phaseTitle" class="font-display text-[1.6rem] leading-none truncate">…</div>
+        <div id="phaseSub" class="text-[11px] muted truncate mt-0.5"></div>
       </div>
-      <div id="timerWrap" class="relative w-12 h-12 hidden">
-        <svg viewBox="0 0 48 48" class="w-12 h-12 -rotate-90"><circle cx="24" cy="24" r="20" fill="none" stroke="var(--line)" stroke-width="4"/>
+      <div id="timerWrap" class="relative w-11 h-11 hidden shrink-0">
+        <svg viewBox="0 0 48 48" class="w-11 h-11 -rotate-90"><circle cx="24" cy="24" r="20" fill="none" stroke="var(--line)" stroke-width="4"/>
           <circle id="ring" cx="24" cy="24" r="20" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-dasharray="125.66" stroke-dashoffset="0"/></svg>
-        <span id="timer" class="absolute inset-0 grid place-items-center text-[11px] font-bold tabular-nums"></span>
+        <span id="timer" class="absolute inset-0 grid place-items-center text-[10px] font-bold tabular-nums"></span>
       </div>
-      <button id="roleBtn" class="btn btn-ghost btn-icon hidden" title="${tE('hdr.role')}" aria-label="${tE('hdr.role')}">🎭</button>
-      <button id="soundBtn" class="btn btn-ghost btn-icon" title="${tE('hdr.sound')}" aria-label="${tE('hdr.sound')}"></button>
-      <button class="btn btn-ghost btn-icon !w-auto !px-2.5 text-xs font-bold" data-lang title="${tE('hdr.lang')}">${LANG === 'en' ? 'ՀԱՅ' : 'EN'}</button>
-      <button id="helpBtn" class="btn btn-ghost btn-icon hidden sm:inline-flex" title="${tE('hdr.help')}" aria-label="${tE('hdr.help')}">?</button>
-      <button id="leaveBtn" class="btn btn-ghost btn-sm">${tE('hdr.leave')}</button>
+      <button id="roleBtn" class="iconbtn hidden" aria-label="${tE('hdr.role')}" title="${tE('peek')}">🎭</button>
+      <button id="testHdr" class="iconbtn hidden" aria-label="Test tools">🧪</button>
+      <button id="menuBtn" class="iconbtn" aria-label="${tE('menu.title')}">☰</button>
     </div>
-    <nav class="lg:hidden max-w-6xl mx-auto px-4 flex gap-6 text-sm font-semibold" role="tablist">
-      <button class="tabbtn py-2.5 border-b-2 border-transparent" data-go="game" role="tab">${tE('tab.game')}</button>
-      <button class="tabbtn py-2.5 border-b-2 border-transparent relative" data-go="chat" role="tab">${tE('tab.chat')} <span id="unread" class="hidden absolute -right-5 top-2 chip chip-accent !px-1.5 !py-0 pop-in"></span></button>
-      <button class="tabbtn py-2.5 border-b-2 border-transparent" data-go="log" role="tab">${tE('tab.log')}</button>
-    </nav>
   </header>
-  <main class="max-w-6xl mx-auto px-3 sm:px-4 py-5 pb-24 grid lg:grid-cols-[minmax(0,1fr)_360px] gap-5">
-    <section data-tab="game" class="min-w-0 space-y-5">
-      <div id="callBar" class="panel p-3">
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="min-w-0 flex-1">
-            <div class="font-semibold text-sm">${tE('call.title')}</div>
-            <div id="callInfo" class="text-xs muted truncate"></div>
-            <div id="callNote" class="text-xs accent truncate"></div>
-          </div>
-          <div id="callControls" class="flex flex-wrap gap-2"></div>
-        </div>
-        <div id="tiles" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-3 hidden"></div>
-        <div class="flex items-center gap-1 mt-3 pt-3 border-t overflow-x-auto quick" style="border-color:var(--line)">
-          <span class="text-xs muted mr-1 shrink-0">${tE('call.react')}</span>
-          ${REACTS.map(e => `<button class="emoji-btn shrink-0" data-react="${e}" aria-label="${e}">${e}</button>`).join('')}
-        </div>
-      </div>
-      <div id="mainArea" class="min-w-0"><div class="panel p-10 text-center muted"><div class="text-4xl mb-3 intro-icon">🌙</div>${tE('connecting')}</div></div>
+  <main class="room-main max-w-6xl mx-auto px-3 sm:px-4 pt-3 lg:pt-5 grid lg:grid-cols-[minmax(0,1fr)_380px] gap-4 lg:gap-5">
+    <section data-tab="game" class="min-w-0">
+      <div id="mainArea"><div class="panel p-10 text-center muted"><div class="text-4xl mb-3 intro-icon">🌙</div>${tE('connecting')}</div></div>
+      <div id="dock" class="dock"></div>
     </section>
-    <aside class="space-y-5 min-w-0">
-      <section data-tab="chat" class="panel flex flex-col h-[calc(100dvh-190px)] lg:h-[520px] relative">
-        <div class="px-4 py-3 border-b flex items-center justify-between" style="border-color:var(--line)">
-          <h3 class="font-display text-xl">${tE('chat.title')}</h3><span id="chatChannel" class="chip"></span>
+    <aside class="space-y-4 min-w-0">
+      <section data-tab="call" id="callSec" class="panel p-4">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0"><h3 class="font-display text-2xl leading-none">${tE('call.title')}</h3><p id="callInfo" class="text-xs muted mt-1 truncate"></p></div>
+          <span id="callLive" class="chip"></span>
         </div>
-        <div id="chatList" class="flex-1 overflow-y-auto scroll-thin px-3 py-3 space-y-1.5 text-sm"></div>
+        <div id="callEmpty"></div>
+        <div id="tiles" class="grid grid-cols-2 gap-2 mt-3 hidden"></div>
+        <p id="callNote" class="text-xs accent text-center mt-3"></p>
+        <div id="callControls" class="flex justify-center gap-4 mt-3"></div>
+        <div class="flex items-center justify-center flex-wrap gap-1 mt-4 pt-3 border-t" style="border-color:var(--line)">${REACTS.map(e => `<button class="emoji-btn" data-react="${e}" aria-label="${e}">${e}</button>`).join('')}</div>
+      </section>
+      <section data-tab="chat" id="chatSec" class="panel flex flex-col overflow-hidden">
+        <div class="px-4 py-3 border-b flex items-center justify-between" style="border-color:var(--line)">
+          <h3 class="font-display text-2xl leading-none">${tE('chat.title')}</h3><span id="chatChannel" class="chip"></span>
+        </div>
+        <div id="chatList" class="flex-1 overflow-y-auto scroll-thin px-3 py-3 space-y-1.5 text-[15px]"></div>
         <div id="quick" class="quick flex gap-2 overflow-x-auto px-3 pt-2"></div>
         <div class="relative">
           <div id="picker" class="panel p-3 hidden"></div>
-          <form id="chatForm" class="p-3 flex gap-1.5 items-center">
-            <button type="button" class="btn btn-ghost btn-icon shrink-0" data-pick-open="emoji" aria-label="${tE('emoji')}">😊</button>
-            <button type="button" class="btn btn-ghost btn-icon shrink-0 !text-[11px] font-bold" data-pick-open="gif" aria-label="GIF">GIF</button>
-            <input id="chatInput" class="field !py-2.5" maxlength="300" autocomplete="off">
-            <button class="btn btn-primary !px-4 shrink-0" aria-label="${tE('chat.send')}">➤</button>
+          <form id="chatForm" class="p-2.5 flex gap-1.5 items-center">
+            <button type="button" class="iconbtn" data-pick-open="emoji" aria-label="${tE('emoji')}">😊</button>
+            <button type="button" class="iconbtn !text-[11px] font-bold" data-pick-open="gif" aria-label="GIF">GIF</button>
+            <input id="chatInput" class="field !py-2.5 !rounded-full" maxlength="300" autocomplete="off" enterkeyhint="send">
+            <button class="iconbtn !bg-[var(--accent)] !text-[var(--accent-ink)] !border-transparent" aria-label="${tE('chat.send')}">➤</button>
           </form>
         </div>
       </section>
       <section data-tab="log" class="panel p-4">
-        <h3 class="font-display text-xl mb-3">${tE('tab.log')}</h3>
-        <ol id="logList" class="space-y-2 text-sm max-h-[420px] overflow-y-auto scroll-thin pr-1"></ol>
+        <h3 class="font-display text-2xl mb-4">${tE('tab.log')}</h3>
+        <ol id="logList" class="timeline text-sm"></ol>
       </section>
     </aside>
-  </main>`;
-  $('#leaveBtn').onclick = () => { if (S.room?.status === 'playing' && realMe() && !confirm(t('leave.confirm'))) return; leaveRoom(); };
-  $('#roleBtn').onclick = () => showRoleCard(false);
-  $('#helpBtn').onclick = showHelp;
-  const sb = $('#soundBtn'); const paint = () => sb.textContent = Sound.on ? '🔊' : '🔇'; paint();
-  sb.onclick = () => { Sound.on = !Sound.on; localStorage.setItem('nf_sound', Sound.on ? '1' : '0'); paint(); if (Sound.on) Sound.play('pick'); };
-  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { S.tab = b.dataset.go; if (S.tab === 'chat') S.unread = 0; updateTabs(); if (S.tab === 'chat') scrollChat(true); });
+  </main>
+  <nav id="nav" role="tablist">
+    ${tabs.map(([k, i, l]) => `<button class="navbtn" data-go="${k}" role="tab"><span class="ico">${i}</span><span>${tE(l)}</span>${k === 'chat' ? '<span id="unread" class="nbadge hidden"></span>' : ''}${k === 'call' ? '<span id="callBadge" class="nbadge good hidden"></span>' : ''}</button>`).join('')}
+  </nav>`;
+  $('#menuBtn').onclick = openMenu;
+  $('#testHdr').onclick = () => { S.testOpen = !S.testOpen; renderTestDock(); };
+  bindRoleBtn();
+  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => goTab(b.dataset.go));
   $('#chatForm').onsubmit = e => { e.preventDefault(); sendChat($('#chatInput').value); };
   $('#quick').onclick = e => { const b = e.target.closest('[data-q]'); if (b) sendChat(b.dataset.q); };
   $('#chatForm').addEventListener('click', e => { const b = e.target.closest('[data-pick-open]'); if (b) togglePicker(b.dataset.pickOpen); });
   $('#picker').addEventListener('click', onPickerClick);
   $('#picker').addEventListener('input', e => { if (e.target.id === 'gifQuery') { clearTimeout(S.gifT); S.gifT = setTimeout(() => loadGifs(e.target.value.trim()), 400); } });
-  $('#callBar').addEventListener('click', e => {
+  $('#callSec').addEventListener('click', e => {
     const c = e.target.closest('[data-call]'), rx = e.target.closest('[data-react]');
     if (rx) return sendReaction(rx.dataset.react);
     if (!c) return;
@@ -1325,14 +1473,237 @@ function renderRoomShell() {
   $('#mainArea').addEventListener('click', onMainClick);
   $('#mainArea').addEventListener('change', onMainChange);
   $('#mainArea').addEventListener('focusout', () => setTimeout(() => { if (S.deferred) { S.deferred = false; renderMain(); } }, 60));
+  $('#dock').addEventListener('click', onDockClick);
   Object.values(Call.tiles).forEach(el => $('#tiles').appendChild(el));
-  updateTabs(); renderCallBar();
+  updateTabs(); renderCallBar(); syncViewport();
+}
+function goTab(k) {
+  if (S.tab === k) { if (k === 'game') scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  S.tab = k; if (k === 'chat') S.unread = 0;
+  vibrate(8); updateTabs();
+  if (k === 'chat') scrollChat(true); else scrollTo({ top: 0 });
 }
 function updateTabs() {
-  document.body.classList.remove('tab-game', 'tab-chat', 'tab-log');
+  document.body.classList.remove('tab-game', 'tab-chat', 'tab-log', 'tab-call');
   document.body.classList.add('tab-' + S.tab);
   document.querySelectorAll('[data-go]').forEach(b => b.setAttribute('aria-selected', b.dataset.go === S.tab));
   const u = $('#unread'); if (u) { u.textContent = S.unread; u.classList.toggle('hidden', !S.unread); }
+}
+
+/* ---------- Phone helpers: keyboard, wake lock, install ---------- */
+function syncViewport() {
+  const vv = window.visualViewport; if (!vv) return;
+  const kb = Math.max(0, innerHeight - vv.height - vv.offsetTop);
+  document.documentElement.style.setProperty('--kb', kb + 'px');
+  document.body.classList.toggle('kb', kb > 120);
+}
+window.visualViewport?.addEventListener('resize', syncViewport);
+window.visualViewport?.addEventListener('scroll', syncViewport);
+let wakeLock = null;
+async function keepAwake(on) {
+  try {
+    if (on && !wakeLock && 'wakeLock' in navigator && document.visibilityState === 'visible') {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.screen === 'room') keepAwake(true); });
+const IS_STANDALONE = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const IS_IOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); S.installEvt = e; if (S.screen === 'home') renderHome(S.homeCode); });
+
+/* ---------- Share helpers ---------- */
+const roomLink = () => `${location.origin}${location.pathname}?room=${S.code}`;
+async function copyLink() {
+  try { await navigator.clipboard.writeText(roomLink()); toast(t('copied')); Sound.play('pick'); vibrate(15); }
+  catch { prompt(t('copy'), roomLink()); }
+}
+function shareInvite() {
+  if (navigator.share) navigator.share({ title: 'Nightfall', text: t('shareText', { code: S.code }), url: roomLink() }).catch(() => {});
+  else copyLink();
+}
+
+/* ---------- Bottom sheets ---------- */
+function showSheet(html, kind) {
+  S.sheetKind = kind;
+  const sh = $('#sheet');
+  sh.style.transform = ''; sh.style.transition = '';
+  sh.innerHTML = `<div class="sheet-grip" data-grip><div class="sheet-handle"></div></div>${html}`;
+  $('#sheetWrap').classList.remove('hidden');
+}
+function hideSheet() {
+  S.sheetKind = null; S.sheetId = null;
+  $('#sheetWrap').classList.add('hidden');
+  const sh = $('#sheet'); sh.innerHTML = ''; sh.style.transform = ''; sh.style.transition = '';
+}
+$('#sheetBg').onclick = hideSheet;
+(function sheetDrag() {
+  const sh = $('#sheet'); let y0 = null, dy = 0;
+  sh.addEventListener('pointerdown', e => { if (!e.target.closest('[data-grip]')) return; y0 = e.clientY; dy = 0; sh.setPointerCapture(e.pointerId); sh.style.transition = 'none'; });
+  sh.addEventListener('pointermove', e => { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); sh.style.transform = `translateY(${dy}px)`; });
+  const up = () => {
+    if (y0 === null) return; y0 = null;
+    sh.style.transition = 'transform .25s ease';
+    if (dy > 90) { sh.style.transform = 'translateY(110%)'; setTimeout(hideSheet, 220); } else sh.style.transform = '';
+  };
+  sh.addEventListener('pointerup', up); sh.addEventListener('pointercancel', up);
+})();
+const rowBtn = (act, ico, label, extra = '', cls = '') => `<button class="row-btn ${cls}" data-sact="${act}"><span class="text-2xl w-8 text-center">${ico}</span><span class="flex-1 text-left">${label}</span>${extra}</button>`;
+function openMenu() {
+  const r = S.room;
+  showSheet(`
+    <h3 class="font-display text-3xl leading-none">${tE('menu.title')}</h3>
+    ${S.code ? `<p class="muted text-xs mt-1 mb-2">${tE('qr.room', { code: S.code })}</p>` : ''}
+    ${rowBtn('sound', Sound.on ? '🔊' : '🔇', tE('menu.sound'), `<span class="chip ${Sound.on ? 'chip-accent' : ''}">${tE(Sound.on ? 'menu.on' : 'menu.off')}</span>`)}
+    ${rowBtn('lang', '🌐', tE('menu.lang'), `<span class="chip chip-accent">${LANG === 'en' ? 'English' : 'Հայերեն'}</span>`)}
+    ${r && r.status !== 'lobby' ? rowBtn('view', S.view === 'table' ? '⭕' : '☰', tE('menu.view'), `<span class="chip">${tE(S.view === 'table' ? 'view.table' : 'view.list')}</span>`) : ''}
+    ${S.code ? rowBtn('invite', '🔗', tE('invite')) : ''}
+    ${rowBtn('help', '📖', tE('hdr.help'))}
+    ${rowBtn('leave', '🚪', tE('menu.leave'), '', 'danger')}`, 'menu');
+}
+function openHostSheet() {
+  const r = S.room, ph = r.phase, sp = curSpeaker(r);
+  showSheet(`
+    <h3 class="font-display text-3xl leading-none mb-2">${tE('host.title')}</h3>
+    ${ph.name === 'day' && sp ? rowBtn('next', '⏭️', tE('turn.next')) : ''}
+    ${ph.name === 'day' ? rowBtn('vote', '🗳️', tE('startVote')) : rowBtn('end', '⏩', tE('endNow'))}
+    ${rowBtn('extend', '⏱️', tE('add30'))}`, 'host');
+}
+function openPlayer(id) { S.sheetId = id; renderPlayerSheet(true); }
+function renderPlayerSheet(open) {
+  if (!open && S.sheetKind !== 'player') return;
+  const r = S.room, p0 = r?.players?.[S.sheetId];
+  if (!p0 || !p0.name) { if (S.sheetKind === 'player') hideSheet(); return; }
+  const p = { id: S.sheetId, ...p0 }, me = getMe(), host = isHost(), playing = r.status !== 'lobby';
+  const act = getAction(r, me), role = playing ? visibleRole(r, me, p) : null;
+  const round = r.phase.round, votes = r.votes?.[round] || {}, n = r.night?.[round] || {};
+  const note = Object.values((me && r.private?.[me.id]) || {}).find(x => x.target === p.id);
+  const voters = r.phase.name === 'vote' ? Object.entries(votes).filter(([v, tg]) => tg === p.id && r.players[v]?.alive).map(([v]) => nameOf(r, v)) : [];
+  const picks = (r.phase.name === 'night' && me && teamOf(me.role) === 'mafia' && me.alive) ? Object.entries(n.kill || {}).filter(([, tg]) => tg === p.id).map(([v]) => nameOf(r, v)) : [];
+  const can = !!(act && act.can(p)), picked = !!(act && act.current === p.id);
+  const status = !playing ? (p.bot ? t('bot') : effectiveHost(r) === p.id ? t('host') : p.online ? t('ready') : t('disconnected'))
+    : p.alive ? (curSpeaker(r) === p.id ? '🎤 ' + t('seat.speaking') : t(p.online ? 'seat.alive' : 'seat.away')) : t(p.diedAt?.how === 'vote' ? 'seat.outVote' : 'seat.outNight');
+  const noteChip = note ? `<span class="chip ${note.yes ? 'chip-danger' : 'chip-good'} !text-xs !py-1">${tE(note.kind === 'det' ? (note.yes ? 'chip.mafia' : 'chip.notMafia') : (note.yes ? 'chip.det' : 'chip.notDet'))}</span>` : '';
+  showSheet(`
+    <div class="flex items-center gap-4">
+      <div class="${p.alive === false ? 'grayscale opacity-60' : ''} ${picked ? 'rounded-full ring-4 ring-[var(--accent)]' : ''}">${avatar(p.name, 'avatar-xl')}</div>
+      <div class="min-w-0">
+        <div class="font-display text-4xl leading-none truncate">${esc(p.name)}</div>
+        <div class="text-sm muted mt-1">${esc(status)}${me && p.id === me.id ? ' ' + tE('you') : ''}</div>
+        <div class="flex flex-wrap gap-1.5 mt-2">
+          ${role ? `<span class="chip ${teamOf(role) === 'mafia' ? 'chip-danger' : 'chip-accent'} !text-xs !py-1">${esc(roleText(role))}</span>` : ''}
+          ${noteChip}${p.bot ? '<span class="chip !text-xs !py-1">🤖</span>' : ''}${S.callPeers[p.id] ? '<span class="chip !text-xs !py-1">🎙️</span>' : ''}
+        </div>
+      </div>
+    </div>
+    ${voters.length ? `<div class="mt-5"><div class="text-xs muted mb-1.5">${tE('sheet.votedBy')} (${voters.length})</div><div class="flex flex-wrap gap-1.5">${voters.map(v => `<span class="chip chip-accent !text-xs !py-1">${esc(v)}</span>`).join('')}</div></div>` : ''}
+    ${picks.length ? `<div class="mt-5"><div class="text-xs muted mb-1.5">${tE('sheet.picks')}</div><div class="flex flex-wrap gap-1.5">${picks.map(v => `<span class="chip chip-danger !text-xs !py-1">🔪 ${esc(v)}</span>`).join('')}</div></div>` : ''}
+    <div class="mt-6 space-y-2">
+      ${can ? `<button class="btn ${picked ? 'btn-ghost' : 'btn-primary'} w-full !py-4 text-base" data-sact="pick">${picked ? '✕ ' + tE('sheet.cancel') : tE('sheet.' + act.kind)}</button>` : ''}
+      ${!playing && host && p.id !== S.pid ? `<button class="btn btn-danger w-full" data-sact="kick">${tE('remove')}</button>` : ''}
+      <button class="btn btn-ghost w-full" data-sact="close">${tE('close')}</button>
+    </div>`, 'player');
+}
+$('#sheet').addEventListener('click', async e => {
+  const b = e.target.closest('[data-sact]'); if (!b) return;
+  const a = b.dataset.sact;
+  if (a === 'close') return hideSheet();
+  if (a === 'sound') { Sound.on = !Sound.on; localStorage.setItem('nf_sound', Sound.on ? '1' : '0'); if (Sound.on) Sound.play('pick'); return openMenu(); }
+  if (a === 'lang') { hideSheet(); return setLang(LANG === 'en' ? 'hy' : 'en'); }
+  if (a === 'view') { S.view = S.view === 'table' ? 'list' : 'table'; localStorage.setItem('nf_view', S.view); renderMain(); return openMenu(); }
+  if (a === 'invite') { hideSheet(); return shareInvite(); }
+  if (a === 'help') { hideSheet(); return showHelp(); }
+  if (a === 'leave') { if (S.room?.status === 'playing' && realMe() && !confirm(t('leave.confirm'))) return; hideSheet(); return S.code ? leaveRoom() : null; }
+  if (a === 'pick') { const id = S.sheetId; hideSheet(); return pickPlayer(id); }
+  if (a === 'kick') { const id = S.sheetId; hideSheet(); return S.roomRef.child('players/' + id).remove(); }
+  hideSheet();
+  if (a === 'next') await finishTurn();
+  if (a === 'vote' || a === 'end') await endPhaseNow();
+  if (a === 'extend') { await extendPhase(30); toast(t('added30')); }
+});
+async function pickPlayer(target) {
+  const r = S.room, me = getMe(), act = getAction(r, me); if (!act) return;
+  if (target !== 'skip' && !(r.players[target] && act.can({ id: target, ...r.players[target] }))) return;
+  Sound.play('pick'); vibrate(25);
+  const ref = S.roomRef.child(act.path);
+  if (act.current === target) await ref.remove();
+  else { await ref.set(target); if (target !== 'skip') toast(t('act.chose', { name: nameOf(r, target) })); }
+}
+
+/* ---------- Hold to peek at your role ---------- */
+function bindRoleBtn() {
+  const b = $('#roleBtn'); let tmr = null, peeking = false, down = false;
+  b.addEventListener('pointerdown', () => { down = true; tmr = setTimeout(() => { peeking = true; showPeek(); vibrate(20); }, 230); });
+  const cancel = () => { clearTimeout(tmr); down = false; if (peeking) { peeking = false; hidePeek(); } };
+  b.addEventListener('pointerup', () => { if (!down) return; clearTimeout(tmr); down = false; if (peeking) { peeking = false; hidePeek(); } else showRoleCard(false); });
+  b.addEventListener('pointerleave', cancel); b.addEventListener('pointercancel', cancel);
+  b.addEventListener('contextmenu', e => e.preventDefault());
+}
+function showPeek() {
+  const me = getMe(); if (!me?.role) return;
+  const el = $('#peek'), mafia = teamOf(me.role) === 'mafia';
+  el.innerHTML = `<div class="panel px-6 py-3 text-xl font-bold pop-in shadow-2xl ${mafia ? 'chip-danger' : 'chip-accent'}" style="border-radius:999px">${esc(roleText(me.role))}</div>`;
+  el.classList.remove('hidden');
+}
+function hidePeek() { $('#peek').classList.add('hidden'); }
+
+/* ---------- Action dock ---------- */
+function renderDock() {
+  const d = $('#dock'); if (!d || !S.room) return;
+  const r = S.room, me = getMe(), host = isHost(), ph = r.phase, act = getAction(r, me);
+  let body = '';
+  if (r.status === 'lobby') {
+    const need = Math.max(0, MIN_PLAYERS - plist(r).filter(p => p.online).length);
+    body = host
+      ? `<button class="btn btn-primary flex-1 !py-3.5 text-base" data-dock="start" ${need ? 'disabled' : ''}>${need ? tE('needMore', { n: need }) : '▶ ' + tE('start')}</button>`
+      : `<div class="flex-1 text-sm muted px-2">${tE('waitStart', { name: nameOf(r, effectiveHost(r)) })}</div>`;
+    body += `<button class="iconbtn" data-dock="share" aria-label="${tE('share')}">📤</button>`;
+  } else if (r.status === 'ended') {
+    body = host ? `<button class="btn btn-primary flex-1 !py-3.5 text-base" data-dock="again">🔁 ${tE('playAgain')}</button>` : `<div class="flex-1 text-sm muted px-2">${tE('waitHost')}</div>`;
+  } else if (!me || !me.alive) {
+    body = `<div class="flex-1 text-sm font-semibold px-2">${tE(!me ? 'spect.t' : 'out.t')}</div><button class="iconbtn" data-dock="chat" aria-label="${tE('nav.chat')}">💬</button>`;
+  } else if (ph.name === 'day' && ph.turn) {
+    const sp = curSpeaker(r);
+    if (sp && sp === me.id) body = `<button class="btn btn-primary flex-1 !py-3.5 text-base" data-dock="done">✓ ${tE('turn.done')}</button>`;
+    else {
+      const nextId = ph.turn.order.slice(ph.turn.idx + 1).find(id => r.players[id]?.alive);
+      body = `<div class="flex-1 min-w-0 px-2"><div class="text-sm font-semibold truncate">${sp ? '🎤 ' + tE('ph.daySpeak', { name: nameOf(r, sp) }) : tE('turn.starting')}</div>${nextId ? `<div class="text-xs muted truncate">${tE('dock.next', { name: nameOf(r, nextId) })}${nextId === me.id ? ' ⭐' : ''}</div>` : ''}</div>`;
+    }
+  } else if (act) {
+    const n = r.night?.[ph.round] || {};
+    const don = me.role === 'don' && ph.name === 'night' ? `<div class="seg shrink-0"><button data-dock="dkill" aria-pressed="${S.donMode === 'kill'}">🔪${n.kill?.[me.id] ? '✓' : ''}</button><button data-dock="dcheck" aria-pressed="${S.donMode === 'check'}">🎩${n.donCheck?.[me.id] ? '✓' : ''}</button></div>` : '';
+    const cur = act.current;
+    const status = cur ? (cur === 'skip' ? tE('act.choseSkip') : tE('dock.choice', { name: nameOf(r, cur) })) : tE('dock.tap');
+    let prog = '';
+    if (act.kind === 'vote') {
+      const votes = r.votes?.[ph.round] || {}, alive = plist(r).filter(p => p.alive), voted = Object.keys(votes).filter(id => r.players[id]?.alive).length;
+      prog = `<div class="h-1 rounded-full mt-1.5 overflow-hidden" style="background:var(--line)"><div class="bar h-full" style="width:${voted / Math.max(1, alive.length) * 100}%"></div></div><div class="text-[10px] muted mt-0.5">${tE('act.voted', { a: voted, b: alive.length })}</div>`;
+    }
+    body = `${don}<div class="flex-1 min-w-0 px-1"><div class="text-sm font-semibold truncate ${cur ? 'accent' : ''}">${status}</div>${prog}</div>${act.kind === 'vote' ? `<button class="btn btn-sm ${cur === 'skip' ? 'btn-primary' : 'btn-ghost'}" data-dock="skip">${tE('act.skip')}</button>` : ''}`;
+  } else if (ph.name === 'night') {
+    body = `<div class="flex-1 px-2 text-sm flex items-center gap-3"><span class="sleep text-base font-bold muted"><span style="--i:0">z</span><span style="--i:1">z</span><span style="--i:2">Z</span></span>${tE('dock.asleep')}</div>`;
+  } else if (ph.name === 'day') {
+    body = `<button class="btn btn-primary flex-1" data-dock="chat">${tE('openChat')}</button>`;
+  } else body = `<div class="flex-1 text-sm px-2">${tE('voting.d')}</div>`;
+  const rc = r.status !== 'lobby' && reactChannel();
+  if (!rc) S.reactOpen = false;
+  const extras = `${rc ? `<button class="iconbtn" data-dock="react" aria-label="${tE('call.react')}" aria-expanded="${S.reactOpen}">😊</button>` : ''}${host && r.status === 'playing' ? `<button class="iconbtn" data-dock="host" aria-label="${tE('host.title')}">👑</button>` : ''}`;
+  d.innerHTML = `${S.reactOpen ? `<div class="react-pop">${REACTS.map(e => `<button class="emoji-btn" data-dock="r" data-e="${e}" aria-label="${e}">${e}</button>`).join('')}</div>` : ''}<div class="dock-inner">${body}${extras}</div>`;
+}
+async function onDockClick(e) {
+  const b = e.target.closest('[data-dock]'); if (!b) return;
+  const a = b.dataset.dock;
+  if (a === 'start') { b.disabled = true; b.textContent = t('shuffling'); await startGame(); }
+  if (a === 'again') await backToLobby();
+  if (a === 'share') shareInvite();
+  if (a === 'done') { vibrate(20); await finishTurn(); }
+  if (a === 'skip') await pickPlayer('skip');
+  if (a === 'chat') goTab('chat');
+  if (a === 'host') openHostSheet();
+  if (a === 'react') { S.reactOpen = !S.reactOpen; renderDock(); }
+  if (a === 'r') sendReaction(b.dataset.e);
+  if (a === 'dkill' || a === 'dcheck') { S.donMode = a === 'dkill' ? 'kill' : 'check'; Sound.play('pick'); renderMain(); renderDock(); }
 }
 
 function onRoomUpdate() {
@@ -1363,7 +1734,7 @@ function onRoomUpdate() {
   }
   S.lastTurnKey = tk;
 
-  renderHeader(); renderMain(); renderLog(); renderChat(); renderTestDock(); applyCallRules(); renderCallBar();
+  renderHeader(); renderMain(); renderDock(); renderLog(); renderChat(); renderTestDock(); applyCallRules(); renderCallBar(); renderPlayerSheet(false); keepAwake(true);
 }
 
 /* ---------- Announcements ---------- */
@@ -1504,6 +1875,7 @@ function updateTimer() {
   ring.style.strokeDashoffset = 125.66 * (1 - Math.max(0, Math.min(1, left / total)));
   ring.style.stroke = urgent ? 'var(--danger)' : 'var(--accent)';
   wrap.classList.toggle('urgent', urgent && left > 0);
+  const ct = $('#ctimer'); if (ct) { ct.textContent = fmt(left); ct.classList.toggle('urgent', urgent && left > 0); }
   const sec = Math.ceil(left / 1000);
   if (sec <= 5 && sec > 0 && sec !== S.lastTick) { S.lastTick = sec; Sound.play('tick'); }
 }
@@ -1514,82 +1886,8 @@ function renderMain() {
   const a = document.activeElement;
   if (a && area.contains(a) && (a.tagName === 'SELECT' || a.tagName === 'INPUT')) { S.deferred = true; return; }
   area.innerHTML = S.room.status === 'lobby' ? lobbyHTML() : gameHTML();
-}
-function lobbyHTML() {
-  const r = S.room, me = getMe(), host = isHost(), s = r.settings;
-  const players = plist(r), link = `${location.origin}${location.pathname}?room=${S.code}`;
-  const online = players.filter(p => p.online).length, need = Math.max(0, MIN_PLAYERS - online);
-  let newcomer = false;
-  const sec = t('sec');
-  const sel = (key, opts, unit) => host
-    ? `<select class="field !py-2" data-setting="${key}">${opts.map(v => `<option value="${v}" ${s[key] === v ? 'selected' : ''}>${v}${unit}</option>`).join('')}</select>`
-    : `<div class="font-semibold py-2">${s[key]}${unit}</div>`;
-  const tog = key => `<label class="flex items-center justify-between gap-3 py-2.5 ${host ? 'cursor-pointer' : ''}">
-      <span>${tE('tog.' + key)}</span><input type="checkbox" class="w-5 h-5 shrink-0" style="accent-color:var(--accent)" data-setting="${key}" ${s[key] ? 'checked' : ''} ${host ? '' : 'disabled'}></label>`;
-  const seats = players.map((p, i) => {
-    const isNew = !S.seenLobby.has(p.id); if (isNew) { S.seenLobby.add(p.id); if (S.seenLobby.size > 1 && p.id !== S.pid) newcomer = true; }
-    return `<li class="panel-soft flex items-center gap-3 p-2.5 ${isNew ? 'pop-in' : ''}" style="--i:${isNew ? i % 8 : 0}">
-      ${avatar(p.name)}
-      <div class="flex-1 min-w-0">
-        <div class="font-semibold truncate">${esc(p.name)} ${p.id === S.pid ? `<span class="muted font-normal">${tE('you')}</span>` : ''} ${S.callPeers[p.id] ? '🎙️' : ''}</div>
-        <div class="text-xs ${p.online ? 'muted' : ''}" ${p.online ? '' : 'style="color:var(--danger)"'}>${p.bot ? tE('bot') : effectiveHost(r) === p.id ? tE('host') : p.online ? tE('ready') : tE('disconnected')}</div>
-      </div>
-      ${host && p.id !== S.pid ? `<button class="btn btn-ghost btn-sm" data-kick="${p.id}">${tE('remove')}</button>` : ''}
-    </li>`;
-  }).join('');
-  if (newcomer) setTimeout(() => Sound.play('join'), 0);
-  return `
-  <div class="space-y-5">
-    <div class="panel p-6 rise">
-      <p class="muted text-sm">${tE('lobby.invite')}</p>
-      <div class="flex flex-wrap items-end gap-x-5 gap-y-3 mt-1">
-        <div class="font-display text-6xl sm:text-7xl tracking-[.12em] leading-none accent">${S.code}</div>
-        <div class="flex flex-wrap gap-2 pb-1">
-          <button class="btn btn-primary btn-sm" data-act="copy">${tE('copy')}</button>
-          ${navigator.share ? `<button class="btn btn-ghost btn-sm" data-act="share">${tE('share')}</button>` : ''}
-          <button class="btn btn-ghost btn-sm" data-act="qr">${tE('qr')}</button>
-        </div>
-      </div>
-      <p class="muted text-xs mt-3 break-all">${esc(link)}</p>
-    </div>
-    <div class="panel p-5">
-      <div class="flex items-baseline justify-between mb-3">
-        <h3 class="font-display text-2xl">${tE('players')}</h3><span class="muted text-sm">${tE('ofN', { a: players.length, b: s.maxPlayers })}</span>
-      </div>
-      <div class="h-1.5 rounded-full mb-4 overflow-hidden" style="background:var(--line)"><div class="bar h-full rounded-full" style="width:${Math.min(100, players.length / s.maxPlayers * 100)}%"></div></div>
-      <ul class="grid sm:grid-cols-2 gap-2">
-        ${seats}
-        ${Array.from({ length: Math.min(4, Math.max(0, s.maxPlayers - players.length)) }).map(() => `<li class="rounded-2xl border border-dashed p-2.5 flex items-center gap-3 muted text-sm" style="border-color:var(--line)"><div class="avatar" style="background:var(--surface2)"></div>${tE('openSeat')}</li>`).join('')}
-      </ul>
-      <p class="text-sm muted mt-4">${players.length >= MIN_PLAYERS ? tE('rolesFor', { n: players.length, roles: roleSummary(players.length, s) }) : tE('waitMin', { n: MIN_PLAYERS })}</p>
-      ${host && s.test ? `
-      <div class="panel-soft p-3 mt-4 flex flex-wrap items-center gap-2 text-sm">
-        <span class="font-semibold mr-auto">${tE('bots')}</span>
-        <button class="btn btn-ghost btn-sm" data-act="addbot" ${players.length >= s.maxPlayers ? 'disabled' : ''}>${tE('addBot')}</button>
-        <button class="btn btn-ghost btn-sm" data-act="fillbots" ${players.length >= s.maxPlayers ? 'disabled' : ''}>${tE('fill')}</button>
-        <button class="btn btn-ghost btn-sm" data-act="clearbots" ${players.some(p => p.bot) ? '' : 'disabled'}>${tE('removeBots')}</button>
-      </div>` : ''}
-    </div>
-    <div class="panel p-5">
-      <h3 class="font-display text-2xl mb-3">${tE('settings')} ${host ? '' : `<span class="text-sm muted font-body">${tE('setByHost')}</span>`}</h3>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-        <label class="space-y-1 block"><span class="muted">${tE('set.seats')}</span>${sel('maxPlayers', [4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16], '')}</label>
-        <label class="space-y-1 block"><span class="muted">${tE('set.night')}</span>${sel('nightTime', [10, 15, 20, 30, 45, 60, 90], sec)}</label>
-        ${s.turns
-          ? `<label class="space-y-1 block"><span class="muted">${tE('set.speak')}</span>${sel('speakTime', [15, 20, 30, 45, 60, 90, 120], sec)}</label>`
-          : `<label class="space-y-1 block"><span class="muted">${tE('set.disc')}</span>${sel('dayTime', [15, 20, 30, 60, 90, 120, 180, 300], sec)}</label>`}
-        <label class="space-y-1 block"><span class="muted">${tE('set.vote')}</span>${sel('voteTime', [10, 15, 20, 30, 45, 60, 90], sec)}</label>
-      </div>
-      <div class="mt-3 divide-y text-sm" style="border-color:var(--line)">
-        ${tog('turns')}${tog('doctor')}${tog('detective')}${tog('don')}${tog('reveal')}${host ? tog('test') : ''}
-      </div>
-    </div>
-    ${host
-      ? `<button class="btn btn-primary w-full !py-4 text-lg" data-act="start" ${need ? 'disabled' : ''}>${need ? tE('needMore', { n: need }) : tE('start')}</button>
-         ${need && !s.test ? `<p class="text-center muted text-sm">${tE('tryAlone')}</p>` : ''}`
-      : `<div class="panel p-4 text-center muted">${tE('waitStart', { name: nameOf(r, effectiveHost(r)) })}</div>`}
-    ${!me ? `<button class="btn btn-ghost w-full" data-act="seat">${tE('takeSeat')}</button>` : ''}
-  </div>`;
+  const tb = area.querySelector('.table'); if (tb && tb.offsetWidth) S.tableW = tb.offsetWidth;
+  updateTimer();
 }
 function getAction(r, me) {
   if (!me || !me.alive || r.status !== 'playing') return null;
@@ -1619,165 +1917,217 @@ function visibleRole(r, me, p) {
 }
 const tallyOf = (votes, id) => Object.entries(votes).filter(([v, tg]) => tg === id && S.room.players[v]?.alive).length;
 
-function turnPanel(r, me) {
-  const tr = r.phase.turn, sp = curSpeaker(r);
-  const queue = `<div class="flex items-center gap-2 overflow-x-auto quick py-2 mt-4">${tr.order.map((id, i) => {
-    const p = r.players[id]; if (!p) return '';
-    const cls = i < tr.idx || !p.alive ? 'q-done' : i === tr.idx ? 'q-now' : '';
-    return `<div class="shrink-0 rounded-full ${cls}" title="${esc(p.name)}">${avatar(p.name, 'avatar-sm')}</div>`;
-  }).join('')}</div>`;
-  if (!sp) return `<div class="flex items-center gap-3"><div class="spinner"></div><div><h2 class="font-display text-3xl">${tE('turn.starting')}</h2><p class="muted text-sm mt-1">${tE('an.turns', { s: r.settings.speakTime })}</p></div></div>${queue}`;
-  const mine = me && sp === me.id, spName = nameOf(r, sp);
-  return `<div class="flex items-center gap-4">
-      <div class="relative">${avatar(spName, 'avatar-lg')}<span class="eq absolute -bottom-1 -right-1 panel !rounded-full px-1.5 py-1"><span style="--i:0"></span><span style="--i:1"></span><span style="--i:2"></span><span style="--i:3"></span></span></div>
-      <div class="min-w-0">
-        <h2 class="font-display text-3xl leading-tight">${mine ? tE('turn.you') : tE('turn.speaking', { name: spName })}</h2>
-        <p class="muted text-sm mt-1">${tE(mine ? 'turn.youD' : 'turn.listen')}</p>
+function lobbyHTML() {
+  const r = S.room, me = getMe(), host = isHost(), s = r.settings, players = plist(r);
+  const sec = t('sec');
+  let newcomer = false;
+  const people = players.map((p, i) => {
+    const isNew = !S.seenLobby.has(p.id); if (isNew) { S.seenLobby.add(p.id); if (S.seenLobby.size > 1 && p.id !== S.pid) newcomer = true; }
+    return `<button class="lseat ${isNew ? 'pop-in' : ''}" style="--i:${isNew ? i % 10 : 0}" data-seat="${p.id}" aria-label="${esc(p.name)}">
+      <span class="relative">${avatar(p.name, 'avatar-lg')}${!p.online ? '<span class="off-dot"></span>' : ''}${effectiveHost(r) === p.id ? '<span class="crown">👑</span>' : ''}</span>
+      <span class="text-xs font-semibold truncate max-w-full mt-1.5">${esc(p.name)}</span>
+      <span class="text-[10px] muted h-3.5">${p.bot ? '🤖' : p.id === S.pid ? tE('you') : (S.callPeers[p.id] ? '🎙️' : '')}</span>
+    </button>`;
+  }).join('');
+  const empties = Math.max(0, Math.min(s.maxPlayers - players.length, 4 - (players.length % 4 || 4) + (players.length < 4 ? 4 : 0)));
+  if (newcomer) setTimeout(() => Sound.play('join'), 0);
+  const c = {}; if (players.length >= MIN_PLAYERS) buildRoles(players.length, s).forEach(x => c[x] = (c[x] || 0) + 1);
+  const roleChips = ROLE_KEYS.filter(k => c[k]).map(k => `<span class="chip !text-sm !py-1 !px-3 ${ROLE_META[k].team === 'mafia' ? 'chip-danger' : ''}" title="${tE('role.' + k)}">${ROLE_META[k].icon} ${c[k]}</span>`).join('');
+  const sel = (key, opts, unit) => host
+    ? `<select class="field !py-2.5" data-setting="${key}">${opts.map(v => `<option value="${v}" ${s[key] === v ? 'selected' : ''}>${v}${unit}</option>`).join('')}</select>`
+    : `<div class="font-semibold py-2.5">${s[key]}${unit}</div>`;
+  const tog = key => `<label class="flex items-center justify-between gap-3 py-3 ${host ? 'cursor-pointer' : ''}"><span class="text-sm">${tE('tog.' + key)}</span><input type="checkbox" class="switch" data-setting="${key}" ${s[key] ? 'checked' : ''} ${host ? '' : 'disabled'}></label>`;
+  const summary = `🌙 ${s.nightTime}${sec}   ${s.turns ? '🎤 ' + s.speakTime + sec : '☀️ ' + s.dayTime + sec}   🗳️ ${s.voteTime}${sec}`;
+  const need = Math.max(0, MIN_PLAYERS - players.filter(p => p.online).length);
+  return `
+  <div class="space-y-3">
+    <div class="panel p-5 text-center rise">
+      <p class="muted text-sm">${tE('lobby.invite')}</p>
+      <button class="font-display text-[3.4rem] sm:text-7xl leading-none tracking-[.14em] accent mt-1" data-act="copy" aria-label="${tE('copy')}">${S.code}</button>
+      <div class="grid grid-cols-3 gap-2 mt-4">
+        <button class="btn btn-primary btn-sm" data-act="share">📤 ${tE('share')}</button>
+        <button class="btn btn-ghost btn-sm" data-act="qr">▦ ${tE('qr')}</button>
+        <button class="btn btn-ghost btn-sm" data-act="copy">🔗 ${tE('copyShort')}</button>
       </div>
     </div>
-    ${mine ? `<button class="btn btn-primary mt-4" data-act="done">${tE('turn.done')}</button>` : ''}
-    ${queue}`;
+    <div class="panel p-4">
+      <div class="flex items-baseline justify-between mb-4">
+        <h3 class="font-display text-2xl leading-none">${tE('players')}</h3><span class="muted text-sm">${tE('ofN', { a: players.length, b: s.maxPlayers })}</span>
+      </div>
+      <div class="grid grid-cols-4 sm:grid-cols-5 gap-x-2 gap-y-4">${people}${Array.from({ length: empties }).map(() => '<div class="lseat"><span class="empty-seat"></span></div>').join('')}</div>
+      ${roleChips ? `<div class="flex flex-wrap gap-1.5 mt-5">${roleChips}</div>` : `<p class="text-sm muted mt-5">${tE('waitMin', { n: MIN_PLAYERS })}</p>`}
+      ${host && players.length > 1 ? `<p class="text-[11px] muted mt-3">${tE('lobby.tapRemove')}</p>` : ''}
+      ${host && s.test ? `
+      <div class="panel-soft p-3 mt-4">
+        <div class="font-semibold text-sm mb-2">${tE('bots')}</div>
+        <div class="grid grid-cols-3 gap-2">
+          <button class="btn btn-ghost btn-sm" data-act="addbot" ${players.length >= s.maxPlayers ? 'disabled' : ''}>＋ 1</button>
+          <button class="btn btn-ghost btn-sm" data-act="fillbots" ${players.length >= s.maxPlayers ? 'disabled' : ''}>${tE('fill')}</button>
+          <button class="btn btn-ghost btn-sm" data-act="clearbots" ${players.some(p => p.bot) ? '' : 'disabled'}>✕ 🤖</button>
+        </div>
+      </div>` : ''}
+    </div>
+    <div class="panel overflow-hidden">
+      <button class="w-full flex items-center gap-3 p-4 text-left" data-act="settings" aria-expanded="${S.settingsOpen}">
+        <span class="text-2xl">⚙️</span>
+        <span class="flex-1 min-w-0"><span class="font-semibold block">${tE('settings')} ${host ? '' : `<span class="text-xs muted font-normal">${tE('setByHost')}</span>`}</span><span class="text-xs muted whitespace-pre">${summary}</span></span>
+        <span class="chev ${S.settingsOpen ? 'open' : ''}">⌄</span>
+      </button>
+      ${S.settingsOpen ? `<div class="px-4 pb-4 fade-in">
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <label class="space-y-1 block"><span class="muted text-xs">${tE('set.seats')}</span>${sel('maxPlayers', [4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16], '')}</label>
+          <label class="space-y-1 block"><span class="muted text-xs">🌙 ${tE('set.night')}</span>${sel('nightTime', [10, 15, 20, 30, 45, 60, 90], sec)}</label>
+          ${s.turns
+            ? `<label class="space-y-1 block"><span class="muted text-xs">🎤 ${tE('set.speak')}</span>${sel('speakTime', [15, 20, 30, 45, 60, 90, 120], sec)}</label>`
+            : `<label class="space-y-1 block"><span class="muted text-xs">☀️ ${tE('set.disc')}</span>${sel('dayTime', [15, 20, 30, 60, 90, 120, 180, 300], sec)}</label>`}
+          <label class="space-y-1 block"><span class="muted text-xs">🗳️ ${tE('set.vote')}</span>${sel('voteTime', [10, 15, 20, 30, 45, 60, 90], sec)}</label>
+        </div>
+        <div class="mt-2 divide-y" style="--tw-divide-opacity:1">${tog('turns')}${tog('doctor')}${tog('detective')}${tog('don')}${tog('reveal')}${host ? tog('test') : ''}</div>
+      </div>` : ''}
+    </div>
+    ${host && need && !s.test ? `<p class="text-center muted text-sm px-4">${tE('tryAlone')}</p>` : ''}
+    ${!me ? `<button class="btn btn-ghost w-full" data-act="seat">${tE('takeSeat')}</button>` : ''}
+  </div>`;
+}
+
+function heroHTML(r, me, act) {
+  const ph = r.phase, round = ph.round;
+  const steps = [['night', '🌙'], ['day', '☀️'], ['vote', '🗳️']];
+  const stepper = r.status === 'playing' ? `<ol class="flex items-center gap-1 text-[11px] mb-3">${steps.map(([k, i], idx) =>
+    `<li class="step ${ph.name === k ? 'step-on' : ''}" ${ph.name === k ? 'aria-current="step"' : ''}>${i}<span class="${ph.name === k ? '' : 'hidden sm:inline'}">${tE('step.' + k)}</span></li>${idx < 2 ? '<li class="step-line" aria-hidden="true"></li>' : ''}`).join('')}</ol>` : '';
+  let icon = '', title = '', hint = '', queue = '';
+  const sp = curSpeaker(r);
+  if (r.status === 'ended') { icon = r.winner === 'town' ? '🎉' : '🔪'; title = tE(r.winner === 'town' ? 'win.town' : 'win.mafia'); hint = (me ? tE(teamOf(me.role) === r.winner ? 'win.yours' : 'win.lost') + ' ' : '') + tE('end.revealed'); }
+  else if (!me) { title = tE('spect.t'); hint = tE('spect.d'); }
+  else if (!me.alive) { title = tE('out.t'); hint = tE('out.d'); }
+  else if (ph.name === 'day' && ph.turn) {
+    if (!sp) { icon = '🎤'; title = tE('turn.starting'); hint = tE('an.turns', { s: r.settings.speakTime }); }
+    else if (sp === me.id) { icon = '🎤'; title = tE('turn.you'); hint = tE('turn.youD'); }
+    else { title = tE('turn.speaking', { name: nameOf(r, sp) }); hint = tE('turn.listen'); }
+    queue = `<div class="flex items-center gap-2 overflow-x-auto quick pt-3 pb-1 px-1">${ph.turn.order.map((id, i) => {
+      const p = r.players[id]; if (!p) return '';
+      return `<div class="shrink-0 rounded-full ${i < ph.turn.idx || !p.alive ? 'q-done' : i === ph.turn.idx ? 'q-now' : ''}" title="${esc(p.name)}">${avatar(p.name, 'avatar-sm')}</div>`;
+    }).join('')}</div>`;
+  }
+  else if (act) { icon = ROLE_META[me.role].icon; title = tE(act.k); hint = tE(act.k + 'D'); }
+  else if (ph.name === 'night') { icon = '😴'; title = tE('sleep.t'); hint = tE('sleep.d'); }
+  else if (ph.name === 'day') { title = tE('talk.t'); hint = tE('talk.d'); }
+  else if (ph.name === 'vote') { title = tE('voting.t'); hint = tE('voting.d'); }
+  const pr = me && r.private?.[me.id]?.[round];
+  const notice = pr && ph.name !== 'night' ? `<div class="panel-soft p-3 mt-3 text-sm">${privateHTML(r, pr)}</div>` : '';
+  return `<div class="panel p-4">${stepper}<div class="flex items-start gap-3">${icon ? `<div class="text-3xl leading-none pt-0.5">${icon}</div>` : ''}<div class="min-w-0"><h2 class="font-display text-[1.7rem] leading-tight">${title}</h2><p class="muted text-sm mt-0.5 leading-snug">${hint}</p></div></div>${notice}${queue}</div>`;
+}
+
+function seatFlags(r, me, act, players) {
+  const ph = r.phase, round = ph.round, votes = r.votes?.[round] || {};
+  const notes = {}; Object.values((me && r.private?.[me.id]) || {}).forEach(x => notes[x.target] = x);
+  const sp = curSpeaker(r), out = {}, nextPrev = {};
+  for (const p of players) {
+    const vc = ph.name === 'vote' ? tallyOf(votes, p.id) : 0, prev = S.prevSeat[p.id];
+    out[p.id] = {
+      role: visibleRole(r, me, p), can: !!(act && act.can(p)), picked: !!(act && act.current === p.id), vc,
+      justDied: !!(prev && prev.alive && !p.alive), vcPop: !!(prev && prev.vc !== vc && vc > 0), note: notes[p.id], speaking: sp === p.id
+    };
+    nextPrev[p.id] = { alive: p.alive, vc };
+  }
+  S.prevSeat = nextPrev;
+  return out;
+}
+
+function feltHTML(r) {
+  const ph = r.phase;
+  if (r.status === 'ended') return `<div class="felt-ico">${r.winner === 'town' ? '🎉' : '🔪'}</div><div class="font-display text-xl leading-tight mt-1">${tE(r.winner === 'town' ? 'win.town' : 'win.mafia')}</div>`;
+  const sp = curSpeaker(r);
+  if (sp) { const nm = nameOf(r, sp); return `${avatar(nm, 'avatar-lg')}<div class="font-semibold text-sm mt-1 truncate max-w-full">${esc(nm)}</div><span class="eq my-1"><span style="--i:0"></span><span style="--i:1"></span><span style="--i:2"></span><span style="--i:3"></span></span><div id="ctimer" class="ctimer !text-xl"></div>`; }
+  const icon = { night: '🌙', day: '☀️', vote: '🗳️' }[ph.name] || '🌙';
+  let sub = tE(ph.name === 'night' ? 'ph.night' : 'ph.day', { n: ph.round });
+  if (ph.name === 'vote') { const v = r.votes?.[ph.round] || {}, alive = plist(r).filter(p => p.alive); sub = tE('act.voted', { a: Object.keys(v).filter(id => r.players[id]?.alive).length, b: alive.length }); }
+  return `<div class="felt-ico" data-k="${ph.name}${ph.round}">${icon}</div><div id="ctimer" class="ctimer"></div><div class="text-[11px] muted leading-tight">${sub}</div>`;
+}
+
+function tableHTML(r, me, act, players, F) {
+  const n = players.length, seat = n <= 6 ? 62 : n <= 9 ? 54 : n <= 12 ? 47 : 41, R = 39;
+  const pos = {};
+  players.forEach((p, i) => { const a = (-90 + i * 360 / n) * Math.PI / 180; pos[p.id] = [50 + R * Math.cos(a), 50 + R * Math.sin(a)]; });
+  const ph = r.phase, round = ph.round;
+  let pairs = [], kind = null;
+  if (ph.name === 'vote') { kind = 'vote'; pairs = Object.entries(r.votes?.[round] || {}).filter(([v, tg]) => r.players[v]?.alive && pos[v] && pos[tg]); }
+  else if (ph.name === 'night' && me?.alive && teamOf(me.role) === 'mafia') { kind = 'kill'; pairs = Object.entries(r.night?.[round]?.kill || {}).filter(([v, tg]) => pos[v] && pos[tg]); }
+  const gap = (seat / 2 + 6) / (S.tableW || 360) * 100;
+  const lines = pairs.map(([v, tg]) => {
+    const [x1, y1] = pos[v], [x2, y2] = pos[tg], dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy) || 1;
+    const sx = x1 + dx / d * gap, sy = y1 + dy / d * gap, ex = x2 - dx / d * gap, ey = y2 - dy / d * gap;
+    const mx = (sx + ex) / 2 + (50 - (sx + ex) / 2) * .35, my = (sy + ey) / 2 + (50 - (sy + ey) / 2) * .35;
+    const isNew = !S.prevLines.has(v + '>' + tg);
+    return `<path class="${kind} ${isNew ? 'draw' : ''}" d="M${sx.toFixed(2)} ${sy.toFixed(2)} Q${mx.toFixed(2)} ${my.toFixed(2)} ${ex.toFixed(2)} ${ey.toFixed(2)}" marker-end="url(#arrow-${kind})"/>`;
+  }).join('');
+  S.prevLines = new Set(pairs.map(([v, tg]) => v + '>' + tg));
+  const entering = S.tableGame !== r.gameId; S.tableGame = r.gameId;
+  const reveal = r.status === 'ended' && S.revealedGame !== r.gameId; if (r.status === 'ended') S.revealedGame = r.gameId;
+  const seats = players.map((p, i) => {
+    const f = F[p.id], [x, y] = pos[p.id];
+    const cls = ['tseat', !p.alive && 'dead', me && p.id === me.id && 'me', act && (f.can ? 'pickable' : 'unpick'), f.picked && 'picked', f.speaking && 'speaking', f.justDied && 'just-died', (entering || reveal) && 'seat-in', !p.online && p.alive && 'away'].filter(Boolean).join(' ');
+    const rb = f.role ? `<span class="rb ${teamOf(f.role) === 'mafia' ? 'rb-m' : ''}">${ROLE_META[f.role].icon}</span>` : '';
+    const nb = f.note ? `<span class="nb ${f.note.yes ? 'yes' : 'no'}">${f.note.yes ? '!' : '✓'}</span>` : '';
+    const vb = f.vc ? `<span class="vb ${f.vcPop ? 'vc-pop' : ''}">${f.vc}</span>` : '';
+    return `<button class="${cls}" style="left:${x.toFixed(2)}%;top:${y.toFixed(2)}%;--i:${i}" data-seat="${p.id}" aria-label="${esc(p.name)}"><span class="av" style="background:hsl(${hue(p.name)} 45% 45%)"><span class="ini">${esc([...p.name.trim()][0]?.toUpperCase() || '?')}</span>${vb}${rb}${nb}</span><span class="nm">${p.bot ? '🤖' : ''}${esc(p.name)}</span></button>`;
+  }).join('');
+  return `<div class="table-wrap"><div class="table" style="--seat:${seat}px">
+    <div class="felt ${lines ? 'see' : ''}">${feltHTML(r)}</div>
+    <svg class="lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <marker id="arrow-vote" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--accent)"/></marker>
+        <marker id="arrow-kill" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--danger)"/></marker>
+      </defs>${lines}</svg>
+    ${seats}
+  </div></div>`;
+}
+
+function listHTML(r, me, act, players, F) {
+  const ph = r.phase, votes = r.votes?.[ph.round] || {}, n = r.night?.[ph.round] || {};
+  return `<div class="grid grid-cols-2 gap-2.5">${players.map((p, i) => {
+    const f = F[p.id];
+    const voters = ph.name === 'vote' ? Object.entries(votes).filter(([v, tg]) => tg === p.id && r.players[v]?.alive).map(([v]) => nameOf(r, v)) : [];
+    const picks = (ph.name === 'night' && me && teamOf(me.role) === 'mafia' && me.alive) ? Object.entries(n.kill || {}).filter(([, tg]) => tg === p.id).map(([v]) => nameOf(r, v)) : [];
+    const cls = ['seat', !p.alive && 'dead', act && !f.can && 'unpick', f.picked && 'picked', f.speaking && 'speaking', f.justDied && 'shake'].filter(Boolean).join(' ');
+    const status = p.alive ? (f.speaking ? '🎤 ' + tE('seat.speaking') : tE(p.online ? 'seat.alive' : 'seat.away')) : tE(p.diedAt?.how === 'vote' ? 'seat.outVote' : 'seat.outNight');
+    return `<button class="${cls}" data-seat="${p.id}" aria-label="${esc(p.name)}">
+      ${f.vc ? `<span class="votecount ${f.vcPop ? 'vc-pop' : ''}">${f.vc}</span>` : ''}
+      <div class="flex items-center gap-2.5">${p.alive ? avatar(p.name) : `<div class="avatar" style="background:var(--surface2)">💀</div>`}
+        <div class="min-w-0"><div class="seat-name font-semibold truncate">${esc(p.name)}${me && p.id === me.id ? ` <span class="muted font-normal text-xs">${tE('you')}</span>` : ''}</div><div class="text-[11px] muted truncate">${p.bot ? '🤖 ' : ''}${status}</div></div></div>
+      <div class="flex flex-wrap gap-1 mt-2 min-h-[1.25rem]">
+        ${f.role ? `<span class="chip ${teamOf(f.role) === 'mafia' ? 'chip-danger' : ''}">${esc(roleText(f.role))}</span>` : ''}
+        ${f.note ? `<span class="chip ${f.note.yes ? 'chip-danger' : 'chip-good'}">${tE(f.note.kind === 'det' ? (f.note.yes ? 'chip.mafia' : 'chip.notMafia') : (f.note.yes ? 'chip.det' : 'chip.notDet'))}</span>` : ''}
+        ${picks.length ? `<span class="chip chip-danger">🔪 ${picks.map(esc).join(', ')}</span>` : ''}
+      </div>
+      ${voters.length ? `<div class="flex items-center mt-1.5 -space-x-1.5">${voters.slice(0, 6).map(v => avatar(v, 'avatar-xs')).join('')}</div>` : ''}
+    </button>`;
+  }).join('')}</div>`;
 }
 
 function gameHTML() {
-  const r = S.room, me = getMe(), ph = r.phase, round = ph.round;
-  const act = getAction(r, me), host = isHost(), players = plist(r);
-  const n = r.night?.[round] || {}, votes = r.votes?.[round] || {};
-  const alive = players.filter(p => p.alive), sp = curSpeaker(r);
-  const myNotes = {}; Object.values((me && r.private?.[me.id]) || {}).forEach(x => myNotes[x.target] = x);
-  const steps = [['night', '🌙'], ['day', '☀️'], ['vote', '🗳️']];
-  const stepper = r.status === 'playing' ? `<ol class="flex items-center gap-1.5 text-xs mb-4">${steps.map(([k, i], idx) =>
-    `<li class="step ${ph.name === k ? 'step-on' : ''}" ${ph.name === k ? 'aria-current="step"' : ''}>${i}<span class="${ph.name === k ? '' : 'hidden sm:inline'}">${tE('step.' + k)}</span></li>${idx < 2 ? '<li class="step-line" aria-hidden="true"></li>' : ''}`).join('')}</ol>` : '';
-
-  let panel = '';
-  if (r.status === 'ended') {
-    panel = `<div class="text-center py-2">
-      <div class="text-6xl mb-2 intro-icon">${r.winner === 'town' ? '🎉' : '🔪'}</div>
-      <h2 class="font-display text-5xl leading-none">${tE(r.winner === 'town' ? 'win.town' : 'win.mafia')}</h2>
-      <p class="muted mt-3">${me ? tE(teamOf(me.role) === r.winner ? 'win.yours' : 'win.lost') : ''} ${tE('end.revealed')}</p>
-      ${host ? `<button class="btn btn-primary mt-5" data-act="lobby">${tE('playAgain')}</button>` : `<p class="muted text-sm mt-4">${tE('waitHost')}</p>`}
-    </div>`;
-  } else if (!me) panel = `<h2 class="font-display text-3xl">${tE('spect.t')}</h2><p class="muted mt-1">${tE('spect.d')}</p>`;
-  else if (!me.alive) panel = `<h2 class="font-display text-3xl">${tE('out.t')}</h2><p class="muted mt-1">${tE('out.d')}</p>`;
-  else if (ph.name === 'day' && ph.turn) panel = turnPanel(r, me);
-  else if (act) {
-    const donTabs = me.role === 'don' && ph.name === 'night' ? `
-      <div class="flex gap-2 mb-3">
-        <button class="btn btn-sm ${S.donMode === 'kill' ? 'btn-primary' : 'btn-ghost'}" data-don="kill">${tE('act.killTab')} ${n.kill?.[me.id] ? '✓' : ''}</button>
-        <button class="btn btn-sm ${S.donMode === 'check' ? 'btn-primary' : 'btn-ghost'}" data-don="check">${tE('act.searchTab')} ${n.donCheck?.[me.id] ? '✓' : ''}</button>
-      </div>` : '';
-    const cur = act.current === 'skip' ? 'skip' : act.current && nameOf(r, act.current);
-    const voted = Object.keys(votes).filter(id => r.players[id]?.alive).length;
-    const waiting = act.kind === 'vote' ? alive.filter(p => !votes[p.id]).map(p => p.name) : [];
-    panel = `${donTabs}
-      <div class="flex items-start gap-3">
-        <div class="text-4xl leading-none">${ROLE_META[me.role].icon}</div>
-        <div class="min-w-0"><h2 class="font-display text-3xl leading-tight">${tE(act.k)}</h2><p class="muted mt-1 text-sm">${tE(act.k + 'D')}</p></div>
-      </div>
-      <div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
-        ${cur ? `<span class="chip chip-accent !text-sm !py-1 pop-in">${cur === 'skip' ? tE('act.choseSkip') : tE('act.chose', { name: cur })}</span>` : `<span class="chip !text-sm !py-1">${tE('act.tap')}</span>`}
-        ${act.kind === 'vote' ? `<button class="btn btn-sm ${act.current === 'skip' ? 'btn-primary' : 'btn-ghost'}" data-pick="skip">${tE('act.skip')}${tallyOf(votes, 'skip') ? ` (${tallyOf(votes, 'skip')})` : ''}</button>` : ''}
-      </div>
-      ${act.kind === 'vote' ? `
-        <div class="mt-4">
-          <div class="flex justify-between text-xs muted mb-1"><span>${tE('act.voted', { a: voted, b: alive.length })}</span>${waiting.length && waiting.length <= 6 ? `<span class="truncate ml-2">${tE('act.waiting', { names: waiting.join(', ') })}</span>` : ''}</div>
-          <div class="h-1.5 rounded-full overflow-hidden" style="background:var(--line)"><div class="bar h-full rounded-full" style="width:${voted / Math.max(1, alive.length) * 100}%"></div></div>
-        </div>` : ''}`;
-  } else if (ph.name === 'night') {
-    panel = `<div class="flex items-center gap-4">
-      <div class="text-5xl relative">😴<span class="sleep absolute -top-3 -right-3 text-base font-bold muted"><span style="--i:0">z</span><span style="--i:1">z</span><span style="--i:2">Z</span></span></div>
-      <div><h2 class="font-display text-3xl">${tE('sleep.t')}</h2><p class="muted mt-1 text-sm">${tE('sleep.d')}</p></div></div>`;
-  } else if (ph.name === 'day') {
-    panel = `<h2 class="font-display text-3xl">${tE('talk.t')}</h2><p class="muted mt-1">${tE('talk.d')}</p><button class="btn btn-ghost btn-sm mt-3 lg:hidden" data-act="gochat">${tE('openChat')}</button>`;
-  } else if (ph.name === 'vote') panel = `<h2 class="font-display text-3xl">${tE('voting.t')}</h2><p class="muted mt-1">${tE('voting.d')}</p>`;
-
-  const hostTools = host && r.status === 'playing' ? `
-    <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t text-sm" style="border-color:var(--line)">
-      <span class="muted self-center mr-1">${tE('host')}</span>
-      ${ph.name === 'day' && ph.turn ? `<button class="btn btn-ghost btn-sm" data-act="next">${tE('turn.next')}</button>` : ''}
-      <button class="btn btn-ghost btn-sm" data-act="endnow">${tE(ph.name === 'day' ? 'startVote' : 'endNow')}</button>
-      <button class="btn btn-ghost btn-sm" data-act="extend">${tE('add30')}</button>
-    </div>` : '';
-  const pr = me && r.private?.[me.id]?.[round];
-  const notice = pr && ph.name !== 'night' ? `<div class="panel-soft p-3 mt-4 text-sm">${privateHTML(r, pr)}</div>` : '';
-
-  const revealAnim = r.status === 'ended' && S.revealedGame !== r.gameId;
-  if (r.status === 'ended') S.revealedGame = r.gameId;
-  const nextPrev = {}, sleeping = ph.name === 'night' && me && me.alive && !act;
-  const seats = players.map((p, i) => {
-    const role = visibleRole(r, me, p);
-    const can = act && act.can(p), picked = act && act.current === p.id;
-    const vc = ph.name === 'vote' ? tallyOf(votes, p.id) : 0;
-    const prev = S.prevSeat[p.id];
-    const justDied = prev && prev.alive && !p.alive, vcChanged = prev && prev.vc !== vc && vc > 0;
-    nextPrev[p.id] = { alive: p.alive, vc };
-    const voters = ph.name === 'vote' ? Object.entries(votes).filter(([v, tg]) => tg === p.id && r.players[v]?.alive).map(([v]) => nameOf(r, v)) : [];
-    const mafiaPicks = (ph.name === 'night' && me && teamOf(me.role) === 'mafia' && me.alive) ? Object.entries(n.kill || {}).filter(([, tg]) => tg === p.id).map(([v]) => nameOf(r, v)) : [];
-    const note = myNotes[p.id], speaking = sp === p.id;
-    const cls = ['seat', !p.alive && 'dead', can && 'pickable', picked && 'picked', justDied && 'just-died', sleeping && 'dimmed', revealAnim && 'pop-in', speaking && 'speaking'].filter(Boolean).join(' ');
-    const status = p.alive ? (speaking ? `<span class="eq mr-1"><span style="--i:0"></span><span style="--i:1"></span><span style="--i:2"></span></span>${tE('seat.speaking')}` : tE(p.online ? 'seat.alive' : 'seat.away')) : tE(p.diedAt?.how === 'vote' ? 'seat.outVote' : 'seat.outNight');
-    return `<button class="${cls}" style="--i:${i}" ${can ? `data-pick="${p.id}"` : 'tabindex="-1"'} aria-pressed="${!!picked}" aria-label="${esc(p.name)}">
-      ${vc ? `<span class="votecount ${vcChanged ? 'vc-pop' : ''}">${vc}</span>` : ''}
-      <div class="flex items-center gap-3">
-        ${p.alive ? avatar(p.name) : `<div class="avatar" style="background:var(--surface2);color:var(--muted)">💀</div>`}
-        <div class="min-w-0">
-          <div class="seat-name font-semibold truncate">${esc(p.name)}${me && p.id === me.id ? ` <span class="muted font-normal text-sm">${tE('you')}</span>` : ''}</div>
-          <div class="text-xs muted truncate flex items-center">${p.bot ? '🤖 ' : ''}${effectiveHost(r) === p.id ? '👑 ' : ''}${S.callPeers[p.id] ? '🎙️ ' : ''}${status}</div>
-        </div>
-      </div>
-      <div class="flex flex-wrap gap-1 mt-2 min-h-[1.25rem]">
-        ${role ? `<span class="chip ${teamOf(role) === 'mafia' ? 'chip-danger' : ''}">${esc(roleText(role))}</span>` : ''}
-        ${note ? `<span class="chip ${note.yes ? 'chip-danger' : 'chip-good'}">${tE(note.kind === 'det' ? (note.yes ? 'chip.mafia' : 'chip.notMafia') : (note.yes ? 'chip.det' : 'chip.notDet'))}</span>` : ''}
-        ${mafiaPicks.length ? `<span class="chip chip-danger">🔪 ${mafiaPicks.map(esc).join(', ')}</span>` : ''}
-      </div>
-      ${voters.length ? `<div class="flex items-center mt-2 -space-x-1.5" title="${esc(voters.join(', '))}">${voters.slice(0, 6).map(v => avatar(v, 'avatar-xs')).join('')}${voters.length > 6 ? `<span class="text-xs muted ml-2">+${voters.length - 6}</span>` : ''}</div>` : ''}
-    </button>`;
-  }).join('');
-  S.prevSeat = nextPrev;
-  return `
-  <div class="space-y-5">
-    <div class="panel p-5 sm:p-6">${stepper}${panel}${notice}${hostTools}</div>
-    <div>
-      <div class="flex items-baseline justify-between mb-3">
-        <h3 class="font-display text-2xl">${tE('town')}</h3>
-        <span class="muted text-sm">${tE('aliveOut', { a: alive.length, b: players.length - alive.length })}</span>
-      </div>
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${seats}</div>
+  const r = S.room, me = getMe(), act = getAction(r, me), players = plist(r), alive = players.filter(p => p.alive);
+  const F = seatFlags(r, me, act, players);
+  return `<div class="space-y-3">
+    ${heroHTML(r, me, act)}
+    <div class="flex items-center justify-between px-1">
+      <span class="muted text-xs">${tE('aliveOut', { a: alive.length, b: players.length - alive.length })}</span>
+      <div class="seg"><button data-act="view" data-v="table" aria-pressed="${S.view === 'table'}">⭕ ${tE('view.table')}</button><button data-act="view" data-v="list" aria-pressed="${S.view === 'list'}">☰ ${tE('view.list')}</button></div>
     </div>
+    ${S.view === 'table' ? tableHTML(r, me, act, players, F) : listHTML(r, me, act, players, F)}
   </div>`;
 }
 
 async function onMainClick(e) {
-  const r = S.room, me = getMe(); if (!r) return;
-  const tg = e.target.closest('[data-act],[data-pick],[data-kick],[data-don]'); if (!tg) return;
-  if (tg.dataset.don) { S.donMode = tg.dataset.don; Sound.play('pick'); renderMain(); return; }
-  if (tg.dataset.kick) {
-    const p = r.players[tg.dataset.kick];
-    if (p?.bot || confirm(t('kick', { name: p?.name || '?' }))) await S.roomRef.child('players/' + tg.dataset.kick).remove();
-    return;
-  }
-  if (tg.dataset.pick) {
-    const act = getAction(r, me); if (!act) return;
-    const target = tg.dataset.pick;
-    if (target !== 'skip' && !(r.players[target] && act.can({ id: target, ...r.players[target] }))) return;
-    Sound.play('pick'); vibrate(25);
-    const ref = S.roomRef.child(act.path);
-    if (act.current === target) await ref.remove(); else await ref.set(target);
-    return;
-  }
-  const a = tg.dataset.act, link = `${location.origin}${location.pathname}?room=${S.code}`;
-  if (a === 'copy') {
-    try { await navigator.clipboard.writeText(link); tg.textContent = t('copied'); Sound.play('pick'); setTimeout(() => { if (tg.isConnected) tg.textContent = t('copy'); }, 1600); }
-    catch { prompt(t('copy'), link); }
-  }
-  if (a === 'share') navigator.share({ title: 'Nightfall', text: t('shareText', { code: S.code }), url: link }).catch(() => {});
+  const r = S.room; if (!r) return;
+  const tg = e.target.closest('[data-act],[data-seat]'); if (!tg) return;
+  if (tg.dataset.seat) { vibrate(10); openPlayer(tg.dataset.seat); return; }
+  const a = tg.dataset.act;
+  if (a === 'copy') copyLink();
+  if (a === 'share') shareInvite();
   if (a === 'qr') showQR();
-  if (a === 'start') { tg.disabled = true; tg.textContent = t('shuffling'); await startGame(); }
-  if (a === 'endnow') await endPhaseNow();
-  if (a === 'next' || a === 'done') await finishTurn();
-  if (a === 'extend') { await extendPhase(30); toast(t('added30')); }
-  if (a === 'lobby') await backToLobby();
-  if (a === 'gochat') { S.tab = 'chat'; S.unread = 0; updateTabs(); scrollChat(true); $('#chatInput').focus(); }
+  if (a === 'view') { S.view = tg.dataset.v; localStorage.setItem('nf_view', S.view); S.tableGame = null; renderMain(); }
+  if (a === 'settings') { S.settingsOpen = !S.settingsOpen; renderMain(); }
   if (a === 'addbot') await addBots(1);
   if (a === 'fillbots') await addBots(99);
   if (a === 'clearbots') await removeBots();
@@ -1800,6 +2150,7 @@ function renderTestDock() {
   const dock = $('#testDock'), r = S.room;
   const show = S.screen === 'room' && r?.settings?.test && isHost();
   dock.classList.toggle('hidden', !show);
+  $('#testHdr')?.classList.toggle('hidden', !show);
   if (!show) return;
   const panel = $('#testPanel');
   panel.classList.toggle('hidden', !S.testOpen);
@@ -1863,7 +2214,7 @@ function renderLog() {
   const first = S.seenLog.size === 0;
   el.innerHTML = entries.map(([k, x]) => {
     const isNew = !first && !S.seenLog.has(k); S.seenLog.add(k);
-    return `<li class="${x.type === 'phase' ? 'font-semibold pt-2' : ''} ${x.type === 'end' ? 'accent font-semibold' : ''} leading-snug ${isNew ? 'msg-in' : ''}">${esc(logText(x))}</li>`;
+    return `<li class="tl tl-${x.type || 'info'} ${isNew ? 'msg-in' : ''}"><span class="tl-dot"></span><span class="tl-txt">${esc(logText(x))}</span></li>`;
   }).join('');
 }
 
